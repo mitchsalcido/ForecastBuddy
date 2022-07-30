@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Tkp-tQ-aJH">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Map View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="MapViewController" customModule="ForecastBuddy" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="YE9-5k-JWa">
+                                <rect key="frame" x="0.0" y="88" width="414" height="774"/>
+                                <gestureRecognizers/>
+                                <connections>
+                                    <outlet property="delegate" destination="BYZ-38-t0r" id="BqL-uP-xGy"/>
+                                    <outletCollection property="gestureRecognizers" destination="nSa-6T-WTf" appends="YES" id="Lch-An-8ZX"/>
+                                </connections>
+                            </mapView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="YE9-5k-JWa" secondAttribute="bottom" id="JWt-GX-NuV"/>
+                            <constraint firstItem="YE9-5k-JWa" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="f1s-3x-RLf"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="YE9-5k-JWa" secondAttribute="trailing" id="hgn-K8-Odc"/>
+                            <constraint firstItem="YE9-5k-JWa" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="lxz-Iq-1wS"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="WUB-mr-mDn"/>
+                    <connections>
+                        <outlet property="mapView" destination="YE9-5k-JWa" id="4yh-1E-ARA"/>
+                        <segue destination="jXz-7W-nrp" kind="show" identifier="WeatherDetailSegueID" id="ona-Pv-sv9"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <pongPressGestureRecognizer allowableMovement="10" minimumPressDuration="0.5" id="nSa-6T-WTf">
+                    <connections>
+                        <action selector="longPressDetected:" destination="BYZ-38-t0r" id="4Yx-wX-d2U"/>
+                    </connections>
+                </pongPressGestureRecognizer>
+            </objects>
+            <point key="canvasLocation" x="928.98550724637687" y="97.767857142857139"/>
+        </scene>
+        <!--Weather Detail View Controller-->
+        <scene sceneID="yea-lA-9BZ">
+            <objects>
+                <viewController id="jXz-7W-nrp" customClass="WeatherDetailViewController" customModule="ForecastBuddy" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="sjM-LK-QMI">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="wlM-tY-R6D">
+                                <rect key="frame" x="0.0" y="88" width="414" height="774"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1Qj-sU-gUn">
+                                        <rect key="frame" x="0.0" y="0.0" width="414" height="387"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bWi-bw-v7Z">
+                                                <rect key="frame" x="182" y="168.5" width="50" height="50"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="50" id="BA8-1w-JpS"/>
+                                                    <constraint firstAttribute="width" constant="50" id="ry2-ir-wkO"/>
+                                                </constraints>
+                                            </imageView>
+                                        </subviews>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstItem="bWi-bw-v7Z" firstAttribute="centerX" secondItem="1Qj-sU-gUn" secondAttribute="centerX" id="Gju-Az-d0n"/>
+                                            <constraint firstItem="bWi-bw-v7Z" firstAttribute="centerY" secondItem="1Qj-sU-gUn" secondAttribute="centerY" id="ZZL-ad-AVT"/>
+                                        </constraints>
+                                    </view>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xdq-EE-dny">
+                                        <rect key="frame" x="0.0" y="387" width="414" height="387"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                        <connections>
+                                            <action selector="buttonPressed:" destination="jXz-7W-nrp" eventType="touchUpInside" id="Wkc-H8-mP2"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="DtF-34-fI6"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstAttribute="bottomMargin" secondItem="wlM-tY-R6D" secondAttribute="bottom" id="6CD-Cv-huk"/>
+                            <constraint firstItem="wlM-tY-R6D" firstAttribute="trailing" secondItem="DtF-34-fI6" secondAttribute="trailing" id="BrA-Q4-Tzh"/>
+                            <constraint firstItem="wlM-tY-R6D" firstAttribute="top" secondItem="DtF-34-fI6" secondAttribute="top" id="HJa-Bw-9Le"/>
+                            <constraint firstItem="wlM-tY-R6D" firstAttribute="leading" secondItem="DtF-34-fI6" secondAttribute="leading" id="iLm-ch-vKU"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="5YX-1P-mHC"/>
+                    <connections>
+                        <outlet property="imageView" destination="bWi-bw-v7Z" id="3KZ-yn-rSe"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ZVd-f1-jKc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2052" y="98"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="tLa-pQ-LMM">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="Tkp-tQ-aJH" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="FYM-lR-qMe">
+                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="byg-zV-Yp9"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="wJx-Ms-32M" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-330" y="98"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>
