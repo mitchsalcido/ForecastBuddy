@@ -9,7 +9,7 @@ import UIKit
 import MapKit
 
 class WeatherAnnotation: MKPointAnnotation {
-    var icon:String?
+    //var icon:String?
     
     var currentWeather:CurrentWeatherResponse!
 }

@@ -40,10 +40,14 @@ class MapViewController: UIViewController, MKMapViewDelegate {
                     return
                 }
                 
+                annotation.currentWeather = currentWeather
+                self.mapView.addAnnotation(annotation)
+                /*
                 if let icon = currentWeather.weather.first?.icon {
                     annotation.icon = icon
                     self.mapView.addAnnotation(annotation)
                 }
+                 */
                 print(currentWeather)
             }
         }
@@ -61,9 +65,12 @@ extension MapViewController {
         let pinView: MKMarkerAnnotationView!
         
         let weatherAnnotation = annotation as! WeatherAnnotation
-        guard let icon = weatherAnnotation.icon else {
+        guard let icon = weatherAnnotation.currentWeather.weather.first?.icon else {
             return nil
         }
+        
+        let tempKelvin:Double = weatherAnnotation.currentWeather.main.temp
+        let temperature = Int(1.8 * (tempKelvin - 273.0)) + 32
         
         // dequeue or create new if nil
         if let pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reUseID) as? MKMarkerAnnotationView {
@@ -81,7 +88,7 @@ extension MapViewController {
             pinView.rightCalloutAccessoryView = getRightCalloutAccessory()
             
             // detail accessory...view with current conditions
-            getDetailCalloutAccessory(icon: icon, annotationView: pinView)
+            getDetailCalloutAccessory(icon: icon, temperature: temperature, annotationView: pinView)
         }
         
         
@@ -107,8 +114,8 @@ extension MapViewController {
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         
         let weatherAnnotation = view.annotation as! WeatherAnnotation
-        if let icon = weatherAnnotation.icon {
-            print("icon: \(icon)")
+        if let icon = weatherAnnotation.currentWeather.weather.first?.icon {
+            print(icon)
         }
     }
 }
@@ -129,35 +136,36 @@ extension MapViewController {
         return button
     }
     
-    func getDetailCalloutAccessory(icon: String, annotationView: MKMarkerAnnotationView) {
+    func getDetailCalloutAccessory(icon: String, temperature: Int, annotationView: MKMarkerAnnotationView) {
         
         if let weatherImageIcon = weatherIcons[icon] {
-            configureDetailCalloutAccessory(weatherImage: weatherImageIcon, temperature: 25.0, annotationView: annotationView)
+            configureDetailCalloutAccessory(weatherImage: weatherImageIcon, temperature: temperature, annotationView: annotationView)
         } else {
             
             OpenWeatherAPI.getWeatherIcon(icon: icon) { image in
                 guard let image = image else {
-                    self.configureDetailCalloutAccessory(weatherImage: nil, temperature: 25.0, annotationView: annotationView)
+                    self.configureDetailCalloutAccessory(weatherImage: nil, temperature: temperature, annotationView: annotationView)
                     return
                 }
                 
                 self.weatherIcons[icon] = image
-                self.configureDetailCalloutAccessory(weatherImage: image, temperature: 25.0, annotationView: annotationView)
+                self.configureDetailCalloutAccessory(weatherImage: image, temperature: temperature, annotationView: annotationView)
             }
         }
     }
     
-    func configureDetailCalloutAccessory(weatherImage: UIImage?, temperature:Double, annotationView:MKMarkerAnnotationView) {
+    func configureDetailCalloutAccessory(weatherImage: UIImage?, temperature: Int, annotationView:MKMarkerAnnotationView) {
         
         let detailView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 50.0))
         let imageView = UIImageView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 35.0))
         imageView.image = weatherImage
+        imageView.contentMode = .scaleAspectFit
         
         detailView.addSubview(imageView)
         
         let label = UILabel(frame: CGRect(x: 0.0, y: 35.0, width: 50.0, height: 15.0))
         label.text = "\(temperature)°F"
-        label.textAlignment = .right
+        label.textAlignment = .center
         label.allowsDefaultTighteningForTruncation = true
         
         detailView.addSubview(label)
