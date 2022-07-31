@@ -15,10 +15,12 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
 
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var homeBbi: UIBarButtonItem!
+    @IBOutlet weak var degreesUnitsToggleBbi: UIBarButtonItem!
     
     var locationManager:CLLocationManager!
     
     var targetRegion:MKCoordinateRegion?
+    var degreesF = true
     
     var weatherIcons:[String:UIImage] = [:]
     
@@ -28,6 +30,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        degreesUnitsToggleBbi.title = "°F"
+        
         locationManager = CLLocationManager()
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
@@ -35,6 +39,11 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
     
     @IBAction func homeBbiPressed(_ sender: Any) {
         locationManager.requestLocation()
+    }
+    
+    @IBAction func degreesUnitsToggleBbiPressed(_ sender: Any) {
+        degreesF = !degreesF
+        degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
     }
     
     @IBAction func longPressDetected(_ sender: Any) {
@@ -61,12 +70,6 @@ extension MapViewController {
         let pinView: MKMarkerAnnotationView!
         
         let weatherAnnotation = annotation as! WeatherAnnotation
-        guard let icon = weatherAnnotation.currentWeather.weather.first?.icon else {
-            return nil
-        }
-        
-        let tempKelvin:Double = weatherAnnotation.currentWeather.main.temp
-        let temperature = Int(1.8 * (tempKelvin - 273.0)) + 32
         
         // dequeue or create new if nil
         if let pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reUseID) as? MKMarkerAnnotationView {
@@ -84,9 +87,8 @@ extension MapViewController {
             pinView.rightCalloutAccessoryView = getRightCalloutAccessory()
             
             // detail accessory...view with current conditions
-            getDetailCalloutAccessory(icon: icon, temperature: temperature, annotationView: pinView)
+            getDetailCalloutAccessory(annotationView: pinView)
         }
-        
         
         return pinView
     }
@@ -124,13 +126,22 @@ extension MapViewController {
         }
     }
 
-    
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        
+        homeBbi.isEnabled = false
+        degreesUnitsToggleBbi.isEnabled = false
+        
+        configureDetailCalloutAccessory(annotationView: view as! MKMarkerAnnotationView)
         
         let weatherAnnotation = view.annotation as! WeatherAnnotation
         if let currentWeather = weatherAnnotation.currentWeather {
             print(currentWeather)
         }
+    }
+    
+    func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
+        homeBbi.isEnabled = true
+        degreesUnitsToggleBbi.isEnabled = true
     }
 }
 
@@ -150,38 +161,44 @@ extension MapViewController {
         return button
     }
     
-    func getDetailCalloutAccessory(icon: String, temperature: Int, annotationView: MKMarkerAnnotationView) {
+    func getDetailCalloutAccessory(annotationView: MKMarkerAnnotationView) {
         
-        if let weatherImageIcon = weatherIcons[icon] {
-            configureDetailCalloutAccessory(weatherImage: weatherImageIcon, temperature: temperature, annotationView: annotationView)
+        let annotation = annotationView.annotation as! WeatherAnnotation
+        let icon = annotation.icon
+        if let _ = weatherIcons[icon] {
+            configureDetailCalloutAccessory(annotationView: annotationView)
         } else {
-            
             OpenWeatherAPI.getWeatherIcon(icon: icon) { image in
-                guard let image = image else {
-                    self.configureDetailCalloutAccessory(weatherImage: nil, temperature: temperature, annotationView: annotationView)
-                    return
-                }
                 
-                self.weatherIcons[icon] = image
-                self.configureDetailCalloutAccessory(weatherImage: image, temperature: temperature, annotationView: annotationView)
+                if let image = image {
+                    self.weatherIcons[icon] = image
+                }
+                self.configureDetailCalloutAccessory(annotationView: annotationView)
             }
         }
     }
     
-    func configureDetailCalloutAccessory(weatherImage: UIImage?, temperature: Int, annotationView:MKMarkerAnnotationView) {
+    func configureDetailCalloutAccessory(annotationView:MKMarkerAnnotationView) {
         
+        let annotation = annotationView.annotation as! WeatherAnnotation
+        let icon = annotation.icon
         let detailView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 50.0))
         let imageView = UIImageView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 35.0))
-        imageView.image = weatherImage
+        imageView.image = weatherIcons[icon]
         imageView.contentMode = .scaleAspectFit
-        
         detailView.addSubview(imageView)
         
+        var temperature:Double!
+        if degreesF {
+            temperature = 1.8 * (annotation.temperature - 273.0) + 32.0
+        } else {
+            temperature = annotation.temperature - 273.15
+        }
+        
         let label = UILabel(frame: CGRect(x: 0.0, y: 35.0, width: 50.0, height: 15.0))
-        label.text = "\(temperature)°F"
+        label.text = degreesF ? "\(Int(temperature))°F" : "\(Int(temperature))°C"
         label.textAlignment = .center
         label.allowsDefaultTighteningForTruncation = true
-        
         detailView.addSubview(label)
         
         let detailImageView = UIImageView(frame: detailView.bounds)
@@ -240,7 +257,6 @@ extension MapViewController {
             
             annotation.currentWeather = currentWeather
             self.mapView.addAnnotation(annotation)
-            
         }
     }
 }

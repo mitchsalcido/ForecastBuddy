@@ -8,8 +8,17 @@
 import UIKit
 import MapKit
 
-class WeatherAnnotation: MKPointAnnotation {
-    //var icon:String?
-    
+class WeatherAnnotation: MKPointAnnotation {    
     var currentWeather:CurrentWeatherResponse!
+    
+    var icon: String {
+        if let icon = currentWeather.weather.first?.icon {
+            return icon
+        }
+        return ""
+    }
+    
+    var temperature: Double {
+        return currentWeather.main.temp
+    }
 }
