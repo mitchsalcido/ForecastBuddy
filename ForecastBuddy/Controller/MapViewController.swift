@@ -7,19 +7,29 @@
 
 import UIKit
 import MapKit
+import CoreLocation
 
-// San Fran: 37.7749° N, -122.4194° W
-// Chico CA: 39.73° N, -121.84° W
-class MapViewController: UIViewController, MKMapViewDelegate {
+// 37.77° N lat, -122.41° W lon San Fran
+// 39.73° N lat, -121.84° W lon Chico
+class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var homeBbi: UIBarButtonItem!
+    
+    var locationManager:CLLocationManager!
     
     var weatherIcons:[String:UIImage] = [:]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //OpenWeatherAPI.getCurrentWeather(longitude: -122.4194, latitude: 37.7749)
+        locationManager = CLLocationManager()
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
+    }
+    
+    @IBAction func homeBbiPressed(_ sender: Any) {
+        locationManager.requestLocation()
     }
     
     @IBAction func longPressDetected(_ sender: Any) {
@@ -111,14 +121,15 @@ extension MapViewController {
         }
     }
     
-    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        print("regionDidChange")
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         
         let weatherAnnotation = view.annotation as! WeatherAnnotation
-        if let icon = weatherAnnotation.currentWeather.weather.first?.icon {
-            print(icon)
+        if let currentWeather = weatherAnnotation.currentWeather {
+            print(currentWeather)
         }
     }
 }
@@ -179,12 +190,24 @@ extension MapViewController {
     }
 }
 
-extension UIView {
-    func imageFromView() -> UIImage? {
-        UIGraphicsBeginImageContextWithOptions(self.bounds.size, false, UIScreen.main.scale)
-        drawHierarchy(in: self.bounds, afterScreenUpdates: true)
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return image
+extension MapViewController {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        homeBbi.isEnabled = manager.authorizationStatus == .authorizedWhenInUse
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.first else {
+            return
+        }
+        
+        let currentLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        let span = MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
+        let region = MKCoordinateRegion(center: currentLocation, span: span)
+        mapView.setRegion(region, animated: true)
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("didFailWithError")
     }
 }
+
