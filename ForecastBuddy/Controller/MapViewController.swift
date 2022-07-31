@@ -111,6 +111,9 @@ extension MapViewController {
         }
     }
     
+    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+    }
+    
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         
         let weatherAnnotation = view.annotation as! WeatherAnnotation
