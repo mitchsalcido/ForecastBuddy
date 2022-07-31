@@ -44,6 +44,13 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
     @IBAction func degreesUnitsToggleBbiPressed(_ sender: Any) {
         degreesF = !degreesF
         degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
+        
+        let annotations = mapView.annotations as! [WeatherAnnotation]
+        for annotation in annotations {
+            if let view = mapView.view(for: annotation) as? MKMarkerAnnotationView {
+                configureDetailCalloutAccessory(annotationView: view)
+            }
+        }
     }
     
     @IBAction func longPressDetected(_ sender: Any) {
@@ -127,16 +134,11 @@ extension MapViewController {
     }
 
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        
         homeBbi.isEnabled = false
         degreesUnitsToggleBbi.isEnabled = false
-        
-        configureDetailCalloutAccessory(annotationView: view as! MKMarkerAnnotationView)
-        
+                
         let weatherAnnotation = view.annotation as! WeatherAnnotation
-        if let currentWeather = weatherAnnotation.currentWeather {
-            print(currentWeather)
-        }
+        print(weatherAnnotation.currentWeather!)
     }
     
     func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
