@@ -18,7 +18,12 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
     
     var locationManager:CLLocationManager!
     
+    var targetRegion:MKCoordinateRegion?
+    
     var weatherIcons:[String:UIImage] = [:]
+    
+    let DISTANCE_RESOLUTION = 500.0 // 500 meters
+    let MILE_IN_METERS = 1600.0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,26 +45,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
         let coordinate = mapView.convert(pressLocation, toCoordinateFrom: mapView)
         
         if longPressGr.state == .began {
-            let annotation = WeatherAnnotation()
-            annotation.coordinate = coordinate
-            //annotation.title = "Annotation"
-            OpenWeatherAPI.getCurrentWeather(longitude: coordinate.longitude, latitude: coordinate.latitude) { response, error in
-                
-                guard let currentWeather = response else {
-                    print("no weather info found")
-                    return
-                }
-                
-                annotation.currentWeather = currentWeather
-                self.mapView.addAnnotation(annotation)
-                /*
-                if let icon = currentWeather.weather.first?.icon {
-                    annotation.icon = icon
-                    self.mapView.addAnnotation(annotation)
-                }
-                 */
-                print(currentWeather)
-            }
+            insertAnnotationAtCoordinate(coordinate: coordinate)
         }
     }
     
@@ -122,7 +108,20 @@ extension MapViewController {
     }
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        print("regionDidChange")
+        
+        if let targetRegion = targetRegion {
+            if regionsEqual(regionA: targetRegion, regionB: mapView.region, metersResolution: DISTANCE_RESOLUTION) {
+                self.targetRegion = nil
+                
+                let annotations = mapView.annotations(in: mapView.visibleMapRect) as! Set<WeatherAnnotation>
+                for annotation in annotations {
+                    if coordinatesEqual(coordA: mapView.region.center, coordB: annotation.coordinate, metersResolution: MILE_IN_METERS) {
+                        mapView.removeAnnotation(annotation)
+                    }
+                }
+                insertAnnotationAtCoordinate(coordinate: mapView.region.center)
+            }
+        }
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
@@ -203,6 +202,7 @@ extension MapViewController {
         let currentLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
         let span = MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
         let region = MKCoordinateRegion(center: currentLocation, span: span)
+        targetRegion = region
         mapView.setRegion(region, animated: true)
     }
     
@@ -211,3 +211,35 @@ extension MapViewController {
     }
 }
 
+extension MapViewController {
+    
+    func regionsEqual(regionA:MKCoordinateRegion, regionB:MKCoordinateRegion, metersResolution:Double) -> Bool {
+        
+        return coordinatesEqual(coordA: regionA.center, coordB: regionB.center, metersResolution: metersResolution)
+    }
+    
+    func coordinatesEqual(coordA:CLLocationCoordinate2D, coordB: CLLocationCoordinate2D, metersResolution:Double) -> Bool {
+        
+        let locationA = CLLocation(latitude: coordA.latitude, longitude: coordA.longitude)
+        let locationB = CLLocation(latitude: coordB.latitude, longitude: coordB.longitude)
+        
+        return locationB.distance(from: locationA) < metersResolution
+    }
+    
+    func insertAnnotationAtCoordinate(coordinate:CLLocationCoordinate2D) {
+        
+        let annotation = WeatherAnnotation()
+        annotation.coordinate = coordinate
+        OpenWeatherAPI.getCurrentWeather(longitude: coordinate.longitude, latitude: coordinate.latitude) { response, error in
+            
+            guard let currentWeather = response else {
+                print("no weather info found")
+                return
+            }
+            
+            annotation.currentWeather = currentWeather
+            self.mapView.addAnnotation(annotation)
+            
+        }
+    }
+}
