@@ -12,6 +12,7 @@ class OpenWeatherAPI {
     
     struct UserInfo {
         static let apiKey = "a9bb26a5929aaba76a9ddc291858d0ea"
+        static let degreesUnitsPreferenceKey = "degreesUnitsPreferenceKey"
     }
     
     struct APIInfo {
@@ -69,6 +70,8 @@ extension OpenWeatherAPI {
             completion(nil)
             return
         }
+        
+        print(url)
         
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data else {

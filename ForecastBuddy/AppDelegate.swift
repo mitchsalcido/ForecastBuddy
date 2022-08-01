@@ -14,6 +14,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        if UserDefaults.standard.value(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey) != nil {
+            print("degree preference exists")
+            if UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey) {
+                print("true -> Far")
+            } else {
+                print("false -> Cel")
+            }
+            
+        } else {
+            print("degree preference DOESN't exist")
+            UserDefaults.standard.set(true, forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
+        }
+        
         return true
     }
 

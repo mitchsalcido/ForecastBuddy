@@ -20,7 +20,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
     var locationManager:CLLocationManager!
     
     var targetRegion:MKCoordinateRegion?
-    var degreesF = true
+    var degreesF:Bool!
     
     var weatherIcons:[String:UIImage] = [:]
     
@@ -30,8 +30,9 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        degreesUnitsToggleBbi.title = "°F"
-        
+        degreesF = UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
+        degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
+
         locationManager = CLLocationManager()
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()        
@@ -41,6 +42,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
         if segue.identifier == "ForecastSegueID" {
             let controller = segue.destination as! ForecastTableViewController
             controller.coordinate = sender as? CLLocationCoordinate2D
+            controller.degreesF = degreesF
+            controller.weatherIcons = weatherIcons
         }
     }
     @IBAction func homeBbiPressed(_ sender: Any) {
@@ -50,6 +53,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
     @IBAction func degreesUnitsToggleBbiPressed(_ sender: Any) {
         degreesF = !degreesF
         degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
+        
+        UserDefaults.standard.set(degreesF, forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         
         let annotations = mapView.annotations as! [WeatherAnnotation]
         for annotation in annotations {
@@ -201,7 +206,7 @@ extension MapViewController {
         }
         
         let label = UILabel(frame: CGRect(x: 0.0, y: 35.0, width: 50.0, height: 15.0))
-        label.text = degreesF ? "\(Int(temperature))°F" : "\(Int(temperature))°C"
+        label.text = "\(Int(temperature))°"
         label.textAlignment = .center
         label.allowsDefaultTighteningForTruncation = true
         detailView.addSubview(label)
