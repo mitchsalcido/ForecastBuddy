@@ -34,9 +34,15 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
         
         locationManager = CLLocationManager()
         locationManager.delegate = self
-        locationManager.requestWhenInUseAuthorization()
+        locationManager.requestWhenInUseAuthorization()        
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ForecastSegueID" {
+            let controller = segue.destination as! ForecastTableViewController
+            controller.coordinate = sender as? CLLocationCoordinate2D
+        }
+    }
     @IBAction func homeBbiPressed(_ sender: Any) {
         locationManager.requestLocation()
     }
@@ -108,7 +114,7 @@ extension MapViewController {
         }
         
         if control == view.rightCalloutAccessoryView {
-            performSegue(withIdentifier: "WeatherDetailSegueID", sender: nil)
+            performSegue(withIdentifier: "ForecastSegueID", sender: weatherAnnotation.coordinate)
         }
         
         if control == view.leftCalloutAccessoryView {
@@ -138,9 +144,6 @@ extension MapViewController {
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         homeBbi.isEnabled = false
         degreesUnitsToggleBbi.isEnabled = false
-                
-        let weatherAnnotation = view.annotation as! WeatherAnnotation
-        print(weatherAnnotation.currentWeather!)
     }
     
     func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
@@ -210,6 +213,7 @@ extension MapViewController {
 }
 
 extension MapViewController {
+    
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         homeBbi.isEnabled = manager.authorizationStatus == .authorizedWhenInUse
     }

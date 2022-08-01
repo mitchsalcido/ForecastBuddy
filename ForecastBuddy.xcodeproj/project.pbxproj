@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		301031A228947C21009D83C5 /* WeatherDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301031A128947C21009D83C5 /* WeatherDetailViewController.swift */; };
 		301031A4289494FB009D83C5 /* WeatherAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301031A3289494FB009D83C5 /* WeatherAnnotation.swift */; };
 		301299F4289825D7001C503E /* FiveDayForecastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301299F3289825D7001C503E /* FiveDayForecastResponse.swift */; };
+		301299F628983C96001C503E /* ForecastTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301299F528983C96001C503E /* ForecastTableViewController.swift */; };
 		306EA75E2896ECAA0066E68D /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 306EA75D2896ECAA0066E68D /* UIView+Ext.swift */; };
 		307B221B28942A1D009FDD65 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307B221A28942A1D009FDD65 /* AppDelegate.swift */; };
 		307B221D28942A1D009FDD65 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307B221C28942A1D009FDD65 /* SceneDelegate.swift */; };
@@ -42,9 +42,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		301031A128947C21009D83C5 /* WeatherDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDetailViewController.swift; sourceTree = "<group>"; };
 		301031A3289494FB009D83C5 /* WeatherAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherAnnotation.swift; sourceTree = "<group>"; };
 		301299F3289825D7001C503E /* FiveDayForecastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiveDayForecastResponse.swift; sourceTree = "<group>"; };
+		301299F528983C96001C503E /* ForecastTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastTableViewController.swift; sourceTree = "<group>"; };
 		306EA75D2896ECAA0066E68D /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
 		307B221728942A1D009FDD65 /* ForecastBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ForecastBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		307B221A28942A1D009FDD65 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -170,7 +170,7 @@
 			isa = PBXGroup;
 			children = (
 				307B221E28942A1D009FDD65 /* MapViewController.swift */,
-				301031A128947C21009D83C5 /* WeatherDetailViewController.swift */,
+				301299F528983C96001C503E /* ForecastTableViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -317,9 +317,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				306EA75E2896ECAA0066E68D /* UIView+Ext.swift in Sources */,
-				301031A228947C21009D83C5 /* WeatherDetailViewController.swift in Sources */,
 				301031A4289494FB009D83C5 /* WeatherAnnotation.swift in Sources */,
 				301299F4289825D7001C503E /* FiveDayForecastResponse.swift in Sources */,
+				301299F628983C96001C503E /* ForecastTableViewController.swift in Sources */,
 				307B221F28942A1D009FDD65 /* MapViewController.swift in Sources */,
 				307B221B28942A1D009FDD65 /* AppDelegate.swift in Sources */,
 				307B221D28942A1D009FDD65 /* SceneDelegate.swift in Sources */,

@@ -52,12 +52,14 @@ class OpenWeatherAPI {
 
 extension OpenWeatherAPI {
     
-    class func getFiveDayForecast(longitude: Double, latitude: Double) {
+    class func getFiveDayForecast(longitude: Double, latitude: Double, completion: @escaping (FiveDayForecastResponse?, Error?) -> Void) {
         
+        taskGET(url: Endpoints.fiveDayForecast(longitude: longitude, latitude: latitude).url, responseType: FiveDayForecastResponse.self, completion: completion)
     }
-    class func getCurrentWeather(longitude: Double, latitude: Double, completion: @escaping (CurrentWeatherResponse?, Error?) -> Void) {
+    
+    class func getCurrentWeather(longitude: Double, latitude: Double, completion: @escaping (CurrentForecastResponse?, Error?) -> Void) {
         
-        taskGET(url: Endpoints.currentWeather(longitude: longitude, latitude: latitude).url, completion: completion)
+        taskGET(url: Endpoints.currentWeather(longitude: longitude, latitude: latitude).url, responseType: CurrentForecastResponse.self, completion: completion)
     }
     
     class func getWeatherIcon(icon:String, completion: @escaping (UIImage?) -> Void) {
@@ -86,7 +88,7 @@ extension OpenWeatherAPI {
 
 extension OpenWeatherAPI {
     
-    class func taskGET(url: URL?, completion: @escaping (CurrentWeatherResponse?, Error?) -> Void) {
+    class func taskGET<ResponseType: Decodable>(url: URL?, responseType: ResponseType.Type, completion: @escaping (ResponseType?, Error?) -> Void) {
         
         guard let url = url else {
             print("bad url")
@@ -102,7 +104,7 @@ extension OpenWeatherAPI {
             }
             
             do {
-                let json = try JSONDecoder().decode(CurrentWeatherResponse.self, from: data)
+                let json = try JSONDecoder().decode(responseType.self, from: data)
                 DispatchQueue.main.async {
                     completion(json, nil)
                 }

@@ -9,7 +9,7 @@ import UIKit
 import MapKit
 
 class WeatherAnnotation: MKPointAnnotation {    
-    var currentWeather:CurrentWeatherResponse!
+    var currentWeather:CurrentForecastResponse!
     
     var icon: String {
         if let icon = currentWeather.weather.first?.icon {
