@@ -52,6 +52,9 @@ class OpenWeatherAPI {
 
 extension OpenWeatherAPI {
     
+    class func getFiveDayForecast(longitude: Double, latitude: Double) {
+        
+    }
     class func getCurrentWeather(longitude: Double, latitude: Double, completion: @escaping (CurrentWeatherResponse?, Error?) -> Void) {
         
         taskGET(url: Endpoints.currentWeather(longitude: longitude, latitude: latitude).url, completion: completion)

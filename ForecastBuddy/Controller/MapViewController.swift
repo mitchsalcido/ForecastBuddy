@@ -128,7 +128,9 @@ extension MapViewController {
                         mapView.removeAnnotation(annotation)
                     }
                 }
-                insertAnnotationAtCoordinate(coordinate: mapView.region.center)
+                insertAnnotationAtCoordinate(coordinate: mapView.region.center) { annotation in
+                    self.mapView.selectAnnotation(annotation, animated: true)
+                }
             }
         }
     }
@@ -164,7 +166,6 @@ extension MapViewController {
     }
     
     func getDetailCalloutAccessory(annotationView: MKMarkerAnnotationView) {
-        
         let annotation = annotationView.annotation as! WeatherAnnotation
         let icon = annotation.icon
         if let _ = weatherIcons[icon] {
@@ -181,7 +182,6 @@ extension MapViewController {
     }
     
     func configureDetailCalloutAccessory(annotationView:MKMarkerAnnotationView) {
-        
         let annotation = annotationView.annotation as! WeatherAnnotation
         let icon = annotation.icon
         let detailView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 50.0))
@@ -239,14 +239,12 @@ extension MapViewController {
     }
     
     func coordinatesEqual(coordA:CLLocationCoordinate2D, coordB: CLLocationCoordinate2D, metersResolution:Double) -> Bool {
-        
         let locationA = CLLocation(latitude: coordA.latitude, longitude: coordA.longitude)
         let locationB = CLLocation(latitude: coordB.latitude, longitude: coordB.longitude)
-        
         return locationB.distance(from: locationA) < metersResolution
     }
     
-    func insertAnnotationAtCoordinate(coordinate:CLLocationCoordinate2D) {
+    func insertAnnotationAtCoordinate(coordinate:CLLocationCoordinate2D, completion:((WeatherAnnotation) -> Void)? = nil) {
         
         let annotation = WeatherAnnotation()
         annotation.coordinate = coordinate
@@ -259,6 +257,9 @@ extension MapViewController {
             
             annotation.currentWeather = currentWeather
             self.mapView.addAnnotation(annotation)
+            if let completion = completion {
+                completion(annotation)
+            }
         }
     }
 }
