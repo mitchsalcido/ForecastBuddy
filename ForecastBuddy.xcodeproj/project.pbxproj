@@ -22,6 +22,8 @@
 		307B223228942A20009FDD65 /* ForecastBuddyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307B223128942A20009FDD65 /* ForecastBuddyTests.swift */; };
 		307B223C28942A20009FDD65 /* ForecastBuddyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307B223B28942A20009FDD65 /* ForecastBuddyUITests.swift */; };
 		307B223E28942A20009FDD65 /* ForecastBuddyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307B223D28942A20009FDD65 /* ForecastBuddyUITestsLaunchTests.swift */; };
+		307FEFEE2899BA7600E5AE79 /* ForecastModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 307FEFEC2899BA7600E5AE79 /* ForecastModel.xcdatamodeld */; };
+		307FEFF02899C2AF00E5AE79 /* CoreDataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307FEFEF2899C2AF00E5AE79 /* CoreDataController.swift */; };
 		30D465F028945EFC009F0BCE /* OpenWeatherAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D465EF28945EFC009F0BCE /* OpenWeatherAPI.swift */; };
 		30D465F228946AB0009F0BCE /* CurrentWeatherResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D465F128946AB0009F0BCE /* CurrentWeatherResponses.swift */; };
 /* End PBXBuildFile section */
@@ -63,6 +65,8 @@
 		307B223728942A20009FDD65 /* ForecastBuddyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ForecastBuddyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		307B223B28942A20009FDD65 /* ForecastBuddyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastBuddyUITests.swift; sourceTree = "<group>"; };
 		307B223D28942A20009FDD65 /* ForecastBuddyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastBuddyUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		307FEFED2899BA7600E5AE79 /* ForecastModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ForecastModel.xcdatamodel; sourceTree = "<group>"; };
+		307FEFEF2899C2AF00E5AE79 /* CoreDataController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataController.swift; sourceTree = "<group>"; };
 		30D465EF28945EFC009F0BCE /* OpenWeatherAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenWeatherAPI.swift; sourceTree = "<group>"; };
 		30D465F128946AB0009F0BCE /* CurrentWeatherResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentWeatherResponses.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -156,6 +160,8 @@
 		307B224A28942A2B009FDD65 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				307FEFEF2899C2AF00E5AE79 /* CoreDataController.swift */,
+				307FEFEC2899BA7600E5AE79 /* ForecastModel.xcdatamodeld */,
 				301031A3289494FB009D83C5 /* WeatherAnnotation.swift */,
 			);
 			path = Model;
@@ -330,8 +336,10 @@
 				307B221B28942A1D009FDD65 /* AppDelegate.swift in Sources */,
 				301299FA28985776001C503E /* Date+Ext.swift in Sources */,
 				301299F828984A74001C503E /* ForecastTableViewCell.swift in Sources */,
+				307FEFF02899C2AF00E5AE79 /* CoreDataController.swift in Sources */,
 				307B221D28942A1D009FDD65 /* SceneDelegate.swift in Sources */,
 				30D465F028945EFC009F0BCE /* OpenWeatherAPI.swift in Sources */,
+				307FEFEE2899BA7600E5AE79 /* ForecastModel.xcdatamodeld in Sources */,
 				30D465F228946AB0009F0BCE /* CurrentWeatherResponses.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -674,6 +682,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		307FEFEC2899BA7600E5AE79 /* ForecastModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				307FEFED2899BA7600E5AE79 /* ForecastModel.xcdatamodel */,
+			);
+			currentVersion = 307FEFED2899BA7600E5AE79 /* ForecastModel.xcdatamodel */;
+			path = ForecastModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 307B220F28942A1D009FDD65 /* Project object */;
 }

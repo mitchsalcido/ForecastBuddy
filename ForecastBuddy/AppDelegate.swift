@@ -10,20 +10,18 @@ import UIKit
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
-
+    // ref to core data stack/controller
+    var dataController:CoreDataController!
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        if UserDefaults.standard.value(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey) != nil {
-            print("degree preference exists")
-            if UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey) {
-                print("true -> Far")
-            } else {
-                print("false -> Cel")
-            }
-            
-        } else {
-            print("degree preference DOESN't exist")
+        
+        // set up core data
+        dataController = CoreDataController(name: "ForecastModel")
+        dataController.load()
+        
+        // Degrees Fahren/Celc user preference stored in UserDefaults
+        if UserDefaults.standard.value(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey) == nil {
             UserDefaults.standard.set(true, forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         }
         

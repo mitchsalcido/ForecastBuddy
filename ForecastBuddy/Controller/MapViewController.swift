@@ -17,6 +17,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
     @IBOutlet weak var homeBbi: UIBarButtonItem!
     @IBOutlet weak var degreesUnitsToggleBbi: UIBarButtonItem!
     
+    var dataController:CoreDataController!
+    
     var locationManager:CLLocationManager!
     
     var targetRegion:MKCoordinateRegion?
@@ -29,6 +31,12 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        title = "Forecast Buddy"
+        
+        // retrieve dataController
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        dataController = appDelegate.dataController
         
         degreesF = UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
@@ -271,4 +279,7 @@ extension MapViewController {
             }
         }
     }
+}
+
+extension MapViewController {
 }
