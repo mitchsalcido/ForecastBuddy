@@ -16,13 +16,44 @@ extension Date {
         return Date(timeIntervalSince1970: timezoneEpochOffset)
     }
     
-    func dayTimeString() -> String {
-        
+    func dayString() -> String {
         // day of week..."Monday", "Tuesday"...."Sunday"
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"
-        let day = formatter.string(from: self)
+        return formatter.string(from: self)
+    }
+    
+    func timeOfDayString() -> String {
         
+        let formatter = DateFormatter()
+
+        // hour of day, AM/PM
+        formatter.dateFormat = "HH"
+        var hour:String = "00"
+        var amPm:String = "AM"
+        if var hourInt = Int(formatter.string(from: self)) {
+            if hourInt > 12 {
+                hourInt -= 12
+                amPm = "PM"
+            }
+            hour = "\(hourInt)"
+        }
+        
+        // minute of hour
+        formatter.dateFormat = "mm"
+        let minute = formatter.string(from: self)
+        
+        // combined format
+        return "\(hour):\(minute) \(amPm)"
+    }
+    
+    func dayTimeString() -> String {
+        
+        // day of week..."Monday", "Tuesday"...."Sunday"
+        let day = dayString()
+        
+        let formatter = DateFormatter()
+
         // hour of day, AM/PM
         formatter.dateFormat = "HH"
         var hour:String = "00"

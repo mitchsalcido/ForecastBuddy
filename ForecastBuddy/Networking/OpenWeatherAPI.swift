@@ -70,9 +70,7 @@ extension OpenWeatherAPI {
             completion(nil)
             return
         }
-        
-        print(url)
-        
+                
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data else {
                 DispatchQueue.main.async {
@@ -118,5 +116,42 @@ extension OpenWeatherAPI {
             }
         }
         task.resume()
+    }
+}
+
+extension OpenWeatherAPI {
+    
+    class func createFiveDayForecastArray(weatherForecast:FiveDayForecastResponse) -> [[String:[HourlyResponse]]] {
+        
+        var results:[[String:[HourlyResponse]]] = []
+        
+        var days:[String] = []
+        for forecast in weatherForecast.list {
+            let dayOfWeek = Date(timeIntervalSince1970: Double(forecast.dt)).dayString()
+            if !days.contains(dayOfWeek) {
+                days.append(dayOfWeek)
+            }
+        }
+        
+        var hourlyResponses:[[HourlyResponse]] = []
+        for day in days {
+            var hourly:[HourlyResponse] = []
+            for forecast in weatherForecast.list {
+                let dayOfForecast = Date(timeIntervalSince1970: Double(forecast.dt)).dayString()
+                if day == dayOfForecast {
+                    hourly.append(forecast)
+                }
+            }
+            hourlyResponses.append(hourly)
+        }
+        
+        days.remove(at: 0)
+        days.insert("Today", at: 0)
+        
+        for (index, day) in days.enumerated() {
+            results.append([day:hourlyResponses[index]])
+        }
+        
+        return results
     }
 }

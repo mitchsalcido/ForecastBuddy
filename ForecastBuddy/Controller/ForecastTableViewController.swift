@@ -12,6 +12,7 @@ class ForecastTableViewController: UITableViewController {
 
     var coordinate:CLLocationCoordinate2D!
     var forecast:FiveDayForecastResponse?
+    var dailyForcast:[[String:[HourlyResponse]]] = []
     var degreesF:Bool!
     var weatherIcons:[String:UIImage] = [:]
 
@@ -21,29 +22,34 @@ class ForecastTableViewController: UITableViewController {
         title = "Five Day Forecast"
         OpenWeatherAPI.getFiveDayForecast(longitude: coordinate.longitude, latitude: coordinate.latitude) { response, error in
             if let response = response {
-                self.forecast = response
+                self.dailyForcast = OpenWeatherAPI.createFiveDayForecastArray(weatherForecast: response)
                 self.tableView.reloadData()
             }
         }
     }
 
     // MARK: - Table view data source
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return dailyForcast.count
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        if let forecast = forecast {
-            return forecast.list.count
-        }
-        return 0
+        return dailyForcast[section].values.first?.count ?? 0
     }
 
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return dailyForcast[section].keys.first
+    }
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ForecastCellID", for: indexPath) as! ForecastTableViewCell
 
         // Configure the cell...
-        if let hourly = forecast?.list[indexPath.row], let weather = hourly.weather.first {
-                        
+        let daily = dailyForcast[indexPath.section]
+        if let hourly = daily.values.first?[indexPath.row], let weather = hourly.weather.first {
+            
             let date = Date(timeIntervalSince1970: Double(hourly.dt))
-            cell.timeLabel.text = date.dayTimeString()
+            cell.timeLabel.text = date.timeOfDayString()
             
             var temperature:Double!
             if degreesF {
@@ -67,50 +73,8 @@ class ForecastTableViewController: UITableViewController {
         }
         return cell
     }
-
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
     }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }

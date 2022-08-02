@@ -35,7 +35,14 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
 
         locationManager = CLLocationManager()
         locationManager.delegate = self
-        locationManager.requestWhenInUseAuthorization()        
+        locationManager.requestWhenInUseAuthorization()
+        
+        OpenWeatherAPI.getFiveDayForecast(longitude: -122.41, latitude: 37.77) { response, error in
+            if let response = response {
+                let forecastArray = OpenWeatherAPI.createFiveDayForecastArray(weatherForecast: response)
+                print(forecastArray)
+            }
+        }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
