@@ -49,16 +49,21 @@ class OpenWeatherAPI {
             return components.url
         }
     }
+    
+    enum OpenWeatherAPIError: LocalizedError {
+        case url
+        case badData
+    }
 }
 
 extension OpenWeatherAPI {
     
-    class func getFiveDayForecast(longitude: Double, latitude: Double, completion: @escaping (FiveDayForecastResponse?, Error?) -> Void) {
+    class func getFiveDayForecast(longitude: Double, latitude: Double, completion: @escaping (FiveDayForecastResponse?, LocalizedError?) -> Void) {
         
         taskGET(url: Endpoints.fiveDayForecast(longitude: longitude, latitude: latitude).url, responseType: FiveDayForecastResponse.self, completion: completion)
     }
     
-    class func getCurrentWeather(longitude: Double, latitude: Double, completion: @escaping (CurrentForecastResponse?, Error?) -> Void) {
+    class func getCurrentWeather(longitude: Double, latitude: Double, completion: @escaping (CurrentForecastResponse?, LocalizedError?) -> Void) {
         
         taskGET(url: Endpoints.currentWeather(longitude: longitude, latitude: latitude).url, responseType: CurrentForecastResponse.self, completion: completion)
     }
@@ -89,7 +94,7 @@ extension OpenWeatherAPI {
 
 extension OpenWeatherAPI {
     
-    class func taskGET<ResponseType: Decodable>(url: URL?, responseType: ResponseType.Type, completion: @escaping (ResponseType?, Error?) -> Void) {
+    class func taskGET<ResponseType: Decodable>(url: URL?, responseType: ResponseType.Type, completion: @escaping (ResponseType?, LocalizedError?) -> Void) {
         
         guard let url = url else {
             print("bad url")
@@ -99,7 +104,7 @@ extension OpenWeatherAPI {
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data else {
                 DispatchQueue.main.async {
-                    completion(nil, error)
+                    completion(nil, OpenWeatherAPIError.badData)
                 }
                 return
             }
@@ -111,7 +116,7 @@ extension OpenWeatherAPI {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    completion(nil, error)
+                    completion(nil, OpenWeatherAPIError.badData)
                 }
             }
         }

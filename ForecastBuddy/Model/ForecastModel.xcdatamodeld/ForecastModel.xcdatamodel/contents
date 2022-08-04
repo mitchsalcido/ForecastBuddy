@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21G72" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="HourlyForecast" representedClassName="HourlyForecast" syncable="YES" codeGenerationType="class">
-        <attribute name="iconName" optional="YES" attributeType="String"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="temperatureKelvin" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="time" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="weatherDescription" optional="YES" attributeType="String"/>
+        <relationship name="pin" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Pin" inverseName="hourlyForecast" inverseEntity="Pin"/>
     </entity>
     <entity name="Icon" representedClassName="Icon" syncable="YES" codeGenerationType="class">
         <attribute name="imageData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
     </entity>
+    <entity name="Pin" representedClassName="Pin" syncable="YES" codeGenerationType="class">
+        <attribute name="latitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="longitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="hourlyForecast" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="HourlyForecast" inverseName="pin" inverseEntity="HourlyForecast"/>
+    </entity>
     <elements>
+        <element name="HourlyForecast" positionX="-364.23046875" positionY="-69.62109375" width="128" height="118"/>
         <element name="Icon" positionX="-183.98828125" positionY="-62.4296875" width="128" height="73"/>
-        <element name="HourlyForecast" positionX="-364.23046875" positionY="-69.62109375" width="128" height="103"/>
+        <element name="Pin" positionX="-544.4921875" positionY="-72.4453125" width="128" height="88"/>
     </elements>
 </model>

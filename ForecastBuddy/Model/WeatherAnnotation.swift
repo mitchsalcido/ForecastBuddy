@@ -7,9 +7,12 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 class WeatherAnnotation: MKPointAnnotation {    
     var currentWeather:CurrentForecastResponse!
+    
+    var pin:Pin!
     
     var icon: String {
         if let icon = currentWeather.weather.first?.icon {
