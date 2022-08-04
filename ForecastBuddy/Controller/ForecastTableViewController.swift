@@ -64,8 +64,8 @@ class ForecastTableViewController: UITableViewController {
             if let iconImage = weatherIcons[weather.icon] {
                 cell.iconImageView.image = iconImage
             } else {
-                OpenWeatherAPI.getWeatherIcon(icon: weather.icon) { image in
-                    if let image = image {
+                OpenWeatherAPI.getWeatherIconData(icon: weather.icon) { data in
+                    if let data = data, let image = UIImage(data: data) {
                         cell.iconImageView.image = image
                     }
                 }

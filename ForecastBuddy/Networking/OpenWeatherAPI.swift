@@ -68,7 +68,7 @@ extension OpenWeatherAPI {
         taskGET(url: Endpoints.currentWeather(longitude: longitude, latitude: latitude).url, responseType: CurrentForecastResponse.self, completion: completion)
     }
     
-    class func getWeatherIcon(icon:String, completion: @escaping (UIImage?) -> Void) {
+    class func getWeatherIconData(icon:String, completion: @escaping (Data?) -> Void) {
         
         let urlString = APIInfo.iconUrlBase + icon + ".png"
         guard let url = URL(string: urlString) else {
@@ -85,7 +85,7 @@ extension OpenWeatherAPI {
             }
             
             DispatchQueue.main.async {
-                completion(UIImage(data: data))
+                completion(data)
             }
         }
         task.resume()

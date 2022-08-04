@@ -39,8 +39,10 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
         // retrieve dataController
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         dataController = appDelegate.dataController
+        
+        fetchIcons()
         fetchPins()
-
+        
         degreesF = UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
 
@@ -151,17 +153,25 @@ extension MapViewController {
                 self.targetRegion = nil
                 
                 addNewPin(coordinate: mapView.region.center)
-                /*
+
                 let annotations = mapView.annotations(in: mapView.visibleMapRect) as! Set<WeatherAnnotation>
+                
+                var nearbyPins:[Pin] = []
                 for annotation in annotations {
                     if coordinatesEqual(coordA: mapView.region.center, coordB: annotation.coordinate, metersResolution: MILE_IN_METERS) {
+                        
+                        print("removing rearby annot's")
                         mapView.removeAnnotation(annotation)
+                        if let pin = annotation.pin {
+                            nearbyPins.append(pin)
+                        }
                     }
                 }
-                insertAnnotationAtCoordinate(coordinate: mapView.region.center) { annotation in
-                    self.mapView.selectAnnotation(annotation, animated: true)
+                dataController.deleteManagedObjects(objects: nearbyPins) { error in
+                    if let _ = error {
+                        print("bad remove annot/pin")
+                    }
                 }
-                 */
             }
         }
     }
@@ -204,10 +214,18 @@ extension MapViewController {
         if let _ = weatherIcons[icon] {
             configureDetailCalloutAccessory(annotationView: annotationView)
         } else {
-            OpenWeatherAPI.getWeatherIcon(icon: icon) { image in
+            OpenWeatherAPI.getWeatherIconData(icon: icon) { data in
                 
-                if let image = image {
+                if let data = data, let image = UIImage(data: data) {
                     self.weatherIcons[icon] = image
+                    let newIcon = Icon(context: self.dataController.viewContext)
+                    newIcon.name = icon
+                    newIcon.imageData = data
+                    self.dataController.saveContext(context: self.dataController.viewContext) { error in
+                        if let _ = error {
+                            print("bad save icon image data")
+                        }
+                    }
                 }
                 self.configureDetailCalloutAccessory(annotationView: annotationView)
             }
@@ -342,7 +360,7 @@ extension MapViewController {
         let fetchRequest:NSFetchRequest<Pin> = NSFetchRequest(entityName: "Pin")
         do {
             let results = try dataController.viewContext.fetch(fetchRequest)
-            print("results count: \(results.count)")
+            print("Pin results count: \(results.count)")
             var oldPins:[Pin] = []
             var oldCoordinates:[CLLocationCoordinate2D] = []
             var currentPins:[Pin] = []
@@ -377,7 +395,23 @@ extension MapViewController {
                 addNewPin(coordinate: coordinate)
             }
         } catch {
-            print("bad try")
+            print("bad try Pins")
+        }
+    }
+    
+    func fetchIcons() {
+        
+        let fetchRequest:NSFetchRequest<Icon> = NSFetchRequest(entityName: "Icon")
+        do {
+            let results = try dataController.viewContext.fetch(fetchRequest)
+            print("Icon results count: \(results.count)")
+            for icon in results {
+                if let name = icon.name, let data = icon.imageData, let image = UIImage(data: data) {
+                    weatherIcons[name] = image
+                }
+            }
+        } catch {
+            print("bad try Icons")
         }
     }
 }
