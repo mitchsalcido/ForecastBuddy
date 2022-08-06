@@ -14,7 +14,6 @@ class ForecastTableViewController: UITableViewController {
     var forecast:FiveDayForecastResponse?
     var dailyForcast:[[String:[HourlyResponse]]] = []
     var degreesF:Bool!
-    var weatherIcons:[String:UIImage] = [:]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,19 +56,10 @@ class ForecastTableViewController: UITableViewController {
             } else {
                 temperature = hourly.main.temp - 273.15
             }
+            
             cell.temperatureLabel.text = "\(Int(temperature))°"
-            
             cell.weatherDescriptionLabel.text = weather.description
-            
-            if let iconImage = weatherIcons[weather.icon] {
-                cell.iconImageView.image = iconImage
-            } else {
-                OpenWeatherAPI.getWeatherIconData(icon: weather.icon) { data in
-                    if let data = data, let image = UIImage(data: data) {
-                        cell.iconImageView.image = image
-                    }
-                }
-            }
+            cell.iconImageView.image = UIImage(named: weather.icon)
         }
         return cell
     }

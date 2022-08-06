@@ -24,9 +24,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
     
     var targetRegion:MKCoordinateRegion?
     var degreesF:Bool!
-    
-    var weatherIcons:[String:UIImage] = [:]
-    
+        
     let DISTANCE_RESOLUTION = 500.0 // 500 meters
     let MILE_IN_METERS = 1600.0
     let WEATHER_UPDATE_INTERVAL:TimeInterval = 30.0//10800.0
@@ -39,10 +37,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
         // retrieve dataController
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         dataController = appDelegate.dataController
-        
-        fetchIcons()
         fetchPins()
-        
+
         degreesF = UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
 
@@ -51,12 +47,19 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
         locationManager.requestWhenInUseAuthorization()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if mapView.annotations.isEmpty {
+            fetchPins()
+        }
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ForecastSegueID" {
             let controller = segue.destination as! ForecastTableViewController
             controller.coordinate = sender as? CLLocationCoordinate2D
             controller.degreesF = degreesF
-            controller.weatherIcons = weatherIcons
         }
     }
     @IBAction func homeBbiPressed(_ sender: Any) {
@@ -206,41 +209,21 @@ extension MapViewController {
     func getDetailCalloutAccessory(annotationView: MKMarkerAnnotationView) {
         
         let annotation = annotationView.annotation as! WeatherAnnotation
-        
-        guard let icon = annotation.pin.hourlyForecast?.name else {
-            return
-        }
-        
-        if let _ = weatherIcons[icon] {
-            configureDetailCalloutAccessory(annotationView: annotationView)
-        } else {
-            OpenWeatherAPI.getWeatherIconData(icon: icon) { data in
-                
-                if let data = data, let image = UIImage(data: data) {
-                    self.weatherIcons[icon] = image
-                    let newIcon = Icon(context: self.dataController.viewContext)
-                    newIcon.name = icon
-                    newIcon.imageData = data
-                    self.dataController.saveContext(context: self.dataController.viewContext) { error in
-                        if let _ = error {
-                            print("bad save icon image data")
-                        }
-                    }
-                }
-                self.configureDetailCalloutAccessory(annotationView: annotationView)
-            }
-        }
-    }
-    
-    func configureDetailCalloutAccessory(annotationView:MKMarkerAnnotationView) {
-        let annotation = annotationView.annotation as! WeatherAnnotation
         guard let icon = annotation.pin.hourlyForecast?.name, var temperature = annotation.pin.hourlyForecast?.temperatureKelvin else {
+            print("bad icon or temperature")
             return
         }
         
         let detailView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 50.0))
+        
         let imageView = UIImageView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 35.0))
-        imageView.image = weatherIcons[icon]
+        
+        if let image = UIImage(named: icon) {
+            print("good image")
+            imageView.image = image
+        } else {
+            print("bad image = nil")
+        }
         imageView.contentMode = .scaleAspectFit
         detailView.addSubview(imageView)
         
@@ -250,7 +233,37 @@ extension MapViewController {
             temperature = temperature - 273.15
         }
         
-        let label = UILabel(frame: CGRect(x: 0.0, y: 35.0, width: 50.0, height: 15.0))
+        let label = UILabel(frame: CGRect(x: 0.0, y: 37.0, width: 50.0, height: 13.0))
+        label.text = "\(Int(temperature))°"
+        label.textAlignment = .center
+        label.allowsDefaultTighteningForTruncation = true
+        detailView.addSubview(label)
+        
+        let detailImageView = UIImageView(frame: detailView.bounds)
+        detailImageView.image = detailView.self.imageFromView()
+        annotationView.detailCalloutAccessoryView = detailImageView
+    }
+    
+    func configureDetailCalloutAccessory(annotationView:MKMarkerAnnotationView) {
+        let annotation = annotationView.annotation as! WeatherAnnotation
+        guard let icon = annotation.pin.hourlyForecast?.name, var temperature = annotation.pin.hourlyForecast?.temperatureKelvin else {
+            return
+        }
+        
+        let detailView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 50.0))
+        
+        let imageView = UIImageView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 35.0))
+        imageView.image = UIImage(named: icon)
+        imageView.contentMode = .scaleAspectFit
+        detailView.addSubview(imageView)
+        
+        if degreesF {
+            temperature = 1.8 * (temperature - 273.0) + 32.0
+        } else {
+            temperature = temperature - 273.15
+        }
+        
+        let label = UILabel(frame: CGRect(x: 0.0, y: 37.0, width: 50.0, height: 13.0))
         label.text = "\(Int(temperature))°"
         label.textAlignment = .center
         label.allowsDefaultTighteningForTruncation = true
@@ -396,22 +409,6 @@ extension MapViewController {
             }
         } catch {
             print("bad try Pins")
-        }
-    }
-    
-    func fetchIcons() {
-        
-        let fetchRequest:NSFetchRequest<Icon> = NSFetchRequest(entityName: "Icon")
-        do {
-            let results = try dataController.viewContext.fetch(fetchRequest)
-            print("Icon results count: \(results.count)")
-            for icon in results {
-                if let name = icon.name, let data = icon.imageData, let image = UIImage(data: data) {
-                    weatherIcons[name] = image
-                }
-            }
-        } catch {
-            print("bad try Icons")
         }
     }
 }
