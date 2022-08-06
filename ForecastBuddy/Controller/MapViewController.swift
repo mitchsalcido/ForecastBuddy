@@ -47,14 +47,6 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
         locationManager.requestWhenInUseAuthorization()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-        if mapView.annotations.isEmpty {
-            fetchPins()
-        }
-    }
-    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ForecastSegueID" {
             let controller = segue.destination as! ForecastTableViewController
@@ -67,15 +59,16 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
     }
     
     @IBAction func degreesUnitsToggleBbiPressed(_ sender: Any) {
+        
         degreesF = !degreesF
         degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
         
         UserDefaults.standard.set(degreesF, forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         
         let annotations = mapView.annotations as! [WeatherAnnotation]
-        for annotation in annotations {
-            if let view = mapView.view(for: annotation) as? MKMarkerAnnotationView {
-                configureDetailCalloutAccessory(annotationView: view)
+        for weatherAnnotation in annotations {
+            if let view = mapView.view(for: weatherAnnotation) as? MKMarkerAnnotationView {
+                view.detailCalloutAccessoryView = getDetailCalloutAccessory(annotation: weatherAnnotation)
             }
         }
     }
@@ -88,7 +81,6 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
         let coordinate = mapView.convert(pressLocation, toCoordinateFrom: mapView)
         
         if longPressGr.state == .began {
-            //insertAnnotationAtCoordinate(coordinate: coordinate)
             addNewPin(coordinate: coordinate)
         }
     }
@@ -122,9 +114,8 @@ extension MapViewController {
             pinView.rightCalloutAccessoryView = getRightCalloutAccessory()
             
             // detail accessory...view with current conditions
-            getDetailCalloutAccessory(annotationView: pinView)
+            pinView.detailCalloutAccessoryView = getDetailCalloutAccessory(annotation: weatherAnnotation)
         }
-        
         return pinView
     }
     
@@ -206,25 +197,23 @@ extension MapViewController {
         return button
     }
     
-    func getDetailCalloutAccessory(annotationView: MKMarkerAnnotationView) {
+    func getDetailCalloutAccessory(annotation: WeatherAnnotation) -> UIView? {
         
-        let annotation = annotationView.annotation as! WeatherAnnotation
+        //let annotation = annotationView.annotation as! WeatherAnnotation
         guard let icon = annotation.pin.hourlyForecast?.name, var temperature = annotation.pin.hourlyForecast?.temperatureKelvin else {
-            print("bad icon or temperature")
-            return
+            return nil
         }
         
         let detailView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 50.0))
         
         let imageView = UIImageView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 35.0))
-        
+        imageView.contentMode = .scaleAspectFit
+
         if let image = UIImage(named: icon) {
-            print("good image")
             imageView.image = image
         } else {
-            print("bad image = nil")
+            // TODO: default icon
         }
-        imageView.contentMode = .scaleAspectFit
         detailView.addSubview(imageView)
         
         if degreesF {
@@ -233,45 +222,18 @@ extension MapViewController {
             temperature = temperature - 273.15
         }
         
-        let label = UILabel(frame: CGRect(x: 0.0, y: 37.0, width: 50.0, height: 13.0))
-        label.text = "\(Int(temperature))°"
+        let label = UILabel(frame: CGRect(x: 0.0, y: 35.0, width: 50.0, height: 15.0))
+        label.text = " \(Int(temperature))°"
         label.textAlignment = .center
         label.allowsDefaultTighteningForTruncation = true
         detailView.addSubview(label)
+
+        let widthConstraint = detailView.widthAnchor.constraint(equalToConstant: 50.0)
+        let heightConstraint = detailView.heightAnchor.constraint(equalToConstant: 50.0)
+        widthConstraint.isActive = true
+        heightConstraint.isActive = true
         
-        let detailImageView = UIImageView(frame: detailView.bounds)
-        detailImageView.image = detailView.self.imageFromView()
-        annotationView.detailCalloutAccessoryView = detailImageView
-    }
-    
-    func configureDetailCalloutAccessory(annotationView:MKMarkerAnnotationView) {
-        let annotation = annotationView.annotation as! WeatherAnnotation
-        guard let icon = annotation.pin.hourlyForecast?.name, var temperature = annotation.pin.hourlyForecast?.temperatureKelvin else {
-            return
-        }
-        
-        let detailView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 50.0))
-        
-        let imageView = UIImageView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 35.0))
-        imageView.image = UIImage(named: icon)
-        imageView.contentMode = .scaleAspectFit
-        detailView.addSubview(imageView)
-        
-        if degreesF {
-            temperature = 1.8 * (temperature - 273.0) + 32.0
-        } else {
-            temperature = temperature - 273.15
-        }
-        
-        let label = UILabel(frame: CGRect(x: 0.0, y: 37.0, width: 50.0, height: 13.0))
-        label.text = "\(Int(temperature))°"
-        label.textAlignment = .center
-        label.allowsDefaultTighteningForTruncation = true
-        detailView.addSubview(label)
-        
-        let detailImageView = UIImageView(frame: detailView.bounds)
-        detailImageView.image = detailView.self.imageFromView()
-        annotationView.detailCalloutAccessoryView = detailImageView
+        return detailView
     }
 }
 
@@ -294,7 +256,7 @@ extension MapViewController {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("didFailWithError")
+        // TODO: location fail alert
     }
 }
 
@@ -309,25 +271,6 @@ extension MapViewController {
         let locationA = CLLocation(latitude: coordA.latitude, longitude: coordA.longitude)
         let locationB = CLLocation(latitude: coordB.latitude, longitude: coordB.longitude)
         return locationB.distance(from: locationA) < metersResolution
-    }
-    
-    func insertAnnotationAtCoordinate(coordinate:CLLocationCoordinate2D, completion:((WeatherAnnotation) -> Void)? = nil) {
-        
-        let annotation = WeatherAnnotation()
-        annotation.coordinate = coordinate
-        OpenWeatherAPI.getCurrentWeather(longitude: coordinate.longitude, latitude: coordinate.latitude) { response, error in
-            
-            guard let currentWeather = response else {
-                print("no weather info found")
-                return
-            }
-            
-            annotation.currentWeather = currentWeather
-            self.mapView.addAnnotation(annotation)
-            if let completion = completion {
-                completion(annotation)
-            }
-        }
     }
 }
 
@@ -373,7 +316,6 @@ extension MapViewController {
         let fetchRequest:NSFetchRequest<Pin> = NSFetchRequest(entityName: "Pin")
         do {
             let results = try dataController.viewContext.fetch(fetchRequest)
-            print("Pin results count: \(results.count)")
             var oldPins:[Pin] = []
             var oldCoordinates:[CLLocationCoordinate2D] = []
             var currentPins:[Pin] = []
@@ -399,16 +341,15 @@ extension MapViewController {
             
             dataController.deleteManagedObjects(objects: oldPins) { error in
                 if let _ = error {
-                    print("delete error")
+                    // TODO: delete pins error alert
                 }
             }
             
             for coordinate in oldCoordinates {
-                print("replacing outdated Pin")
                 addNewPin(coordinate: coordinate)
             }
         } catch {
-            print("bad try Pins")
+            // TODO: bad pins fetch error alert
         }
     }
 }
