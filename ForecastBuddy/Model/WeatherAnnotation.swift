@@ -9,19 +9,6 @@ import UIKit
 import MapKit
 import CoreData
 
-class WeatherAnnotation: MKPointAnnotation {    
-    var currentWeather:CurrentForecastResponse!
-    
+class WeatherAnnotation: MKPointAnnotation {
     var pin:Pin!
-    
-    var icon: String {
-        if let icon = currentWeather.weather.first?.icon {
-            return icon
-        }
-        return ""
-    }
-    
-    var temperature: Double {
-        return currentWeather.main.temp
-    }
 }
