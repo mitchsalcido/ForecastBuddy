@@ -10,5 +10,5 @@ import MapKit
 import CoreData
 
 class WeatherAnnotation: MKPointAnnotation {
-    var pin:Pin!
+    var forecast:Forecast!
 }

@@ -54,6 +54,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
             controller.degreesF = degreesF
         }
     }
+    
     @IBAction func homeBbiPressed(_ sender: Any) {
         locationManager.requestLocation()
     }
@@ -122,7 +123,7 @@ extension MapViewController {
     // handle callout accessory tap
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         
-        guard let weatherAnnotation = view.annotation as? WeatherAnnotation, let pin = weatherAnnotation.pin else {
+        guard let weatherAnnotation = view.annotation as? WeatherAnnotation, let pin = weatherAnnotation.forecast else {
             return
         }
         
@@ -150,13 +151,13 @@ extension MapViewController {
 
                 let annotations = mapView.annotations(in: mapView.visibleMapRect) as! Set<WeatherAnnotation>
                 
-                var nearbyPins:[Pin] = []
+                var nearbyPins:[Forecast] = []
                 for annotation in annotations {
                     if coordinatesEqual(coordA: mapView.region.center, coordB: annotation.coordinate, metersResolution: MILE_IN_METERS) {
                         
                         print("removing rearby annot's")
                         mapView.removeAnnotation(annotation)
-                        if let pin = annotation.pin {
+                        if let pin = annotation.forecast {
                             nearbyPins.append(pin)
                         }
                     }
@@ -200,7 +201,7 @@ extension MapViewController {
     func getDetailCalloutAccessory(annotation: WeatherAnnotation) -> UIView? {
         
         //let annotation = annotationView.annotation as! WeatherAnnotation
-        guard let icon = annotation.pin.hourlyForecast?.name, var temperature = annotation.pin.hourlyForecast?.temperatureKelvin else {
+        guard let icon = annotation.forecast.hourlyForecast?.name, var temperature = annotation.forecast.hourlyForecast?.temperatureKelvin else {
             return nil
         }
         
@@ -284,7 +285,7 @@ extension MapViewController {
                 return
             }
             
-            let pin = Pin(context: self.dataController.viewContext)
+            let pin = Forecast(context: self.dataController.viewContext)
             pin.latitude = coordinate.latitude
             pin.longitude = coordinate.longitude
             
@@ -301,7 +302,7 @@ extension MapViewController {
                 } else {
                     let annotation = WeatherAnnotation()
                     annotation.coordinate = coordinate
-                    annotation.pin = pin
+                    annotation.forecast = pin
                     self.mapView.addAnnotation(annotation)
                 }
             }
@@ -313,12 +314,13 @@ extension MapViewController {
     
     func fetchPins() {
         
-        let fetchRequest:NSFetchRequest<Pin> = NSFetchRequest(entityName: "Pin")
+        let fetchRequest:NSFetchRequest<Forecast> = NSFetchRequest(entityName: "Forecast")
+        //let predicate = NSPredicate(format: "%@ == 1", HourlyForecast. )
         do {
             let results = try dataController.viewContext.fetch(fetchRequest)
-            var oldPins:[Pin] = []
+            var oldPins:[Forecast] = []
             var oldCoordinates:[CLLocationCoordinate2D] = []
-            var currentPins:[Pin] = []
+            var currentPins:[Forecast] = []
             for pin in results {
                 let now = Date()
                 if let date = pin.hourlyForecast?.date, date.distance(to: now) > WEATHER_UPDATE_INTERVAL {
@@ -334,7 +336,7 @@ extension MapViewController {
                 let annotation = WeatherAnnotation()
                 let coordinate = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
                 annotation.coordinate = coordinate
-                annotation.pin = pin
+                annotation.forecast = pin
                 annotations.append(annotation)
             }
             mapView.addAnnotations(annotations)
