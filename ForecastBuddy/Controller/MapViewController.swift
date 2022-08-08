@@ -37,7 +37,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
         // retrieve dataController
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         dataController = appDelegate.dataController
-        fetchPins()
+        fetchCurrentForecasts()
 
         degreesF = UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
@@ -200,11 +200,10 @@ extension MapViewController {
     
     func getDetailCalloutAccessory(annotation: WeatherAnnotation) -> UIView? {
         
-        //let annotation = annotationView.annotation as! WeatherAnnotation
-        guard let icon = annotation.forecast.hourlyForecast?.name, var temperature = annotation.forecast.hourlyForecast?.temperatureKelvin else {
+        guard let forecasts = annotation.forecast.hourlyForecast?.allObjects as? [HourlyForecast], let icon = forecasts.first?.name, var temperature = forecasts.first?.temperatureKelvin else {
             return nil
         }
-        
+    
         let detailView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 50.0))
         
         let imageView = UIImageView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 35.0))
@@ -285,16 +284,17 @@ extension MapViewController {
                 return
             }
             
-            let pin = Forecast(context: self.dataController.viewContext)
-            pin.latitude = coordinate.latitude
-            pin.longitude = coordinate.longitude
+            let forecast = Forecast(context: self.dataController.viewContext)
+            forecast.latitude = coordinate.latitude
+            forecast.longitude = coordinate.longitude
+            forecast.date = Date()
             
             let hourlyForecast = HourlyForecast(context: self.dataController.viewContext)
             hourlyForecast.name = icon
             hourlyForecast.temperatureKelvin = temperature
             hourlyForecast.date = Date()
             
-            pin.hourlyForecast = hourlyForecast
+            hourlyForecast.forecast = forecast
             
             self.dataController.saveContext(context: self.dataController.viewContext) { error in
                 
@@ -302,7 +302,7 @@ extension MapViewController {
                 } else {
                     let annotation = WeatherAnnotation()
                     annotation.coordinate = coordinate
-                    annotation.forecast = pin
+                    annotation.forecast = forecast
                     self.mapView.addAnnotation(annotation)
                 }
             }
@@ -312,10 +312,12 @@ extension MapViewController {
 
 extension MapViewController {
     
-    func fetchPins() {
+    func fetchCurrentForecasts() {
         
         let fetchRequest:NSFetchRequest<Forecast> = NSFetchRequest(entityName: "Forecast")
-        //let predicate = NSPredicate(format: "%@ == 1", HourlyForecast. )
+        let predicate = NSPredicate(format: "hourlyForecast.@count == 1")
+        fetchRequest.predicate = predicate
+        
         do {
             let results = try dataController.viewContext.fetch(fetchRequest)
             var oldPins:[Forecast] = []
@@ -323,7 +325,7 @@ extension MapViewController {
             var currentPins:[Forecast] = []
             for pin in results {
                 let now = Date()
-                if let date = pin.hourlyForecast?.date, date.distance(to: now) > WEATHER_UPDATE_INTERVAL {
+                if let date = pin.date, date.distance(to: now) > WEATHER_UPDATE_INTERVAL {
                     oldPins.append(pin)
                     oldCoordinates.append(CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude))
                 } else {
