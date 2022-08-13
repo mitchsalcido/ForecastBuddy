@@ -128,7 +128,33 @@ extension CoreDataController {
 
 extension CoreDataController {
     
-    func createFiveDayForecast(forecast:Forecast, completion: @escaping () -> Void) {
+    func createFiveDayForecast(forecast:Forecast, completion: @escaping (LocalizedError?) -> Void) {
         
+        let objectID = forecast.objectID
+        OpenWeatherAPI.getFiveDayForecast(longitude: forecast.longitude, latitude: forecast.latitude) { response, error in
+            
+            guard let response = response?.list else {
+                completion(OpenWeatherAPI.OpenWeatherAPIError.badData)
+                return
+            }
+            
+            self.performBackgroundOp { privateContext in
+                let privateForecast = privateContext.object(with: objectID) as! Forecast
+                
+                for hourly in response {
+                    if let name = hourly.weather.first?.icon, let description = hourly.weather.first?.description {
+                        let hourlyForecast = HourlyForecast(context: privateContext)
+                        hourlyForecast.date =  Date(timeIntervalSince1970: Double(hourly.dt))
+                        hourlyForecast.name = name
+                        hourlyForecast.temperatureKelvin = hourly.main.temp
+                        hourlyForecast.weatherDescription = description
+                        hourlyForecast.forecast = privateForecast
+                    }
+                }
+                self.saveContext(context: privateContext) { error in
+                    completion(error)
+                }
+            }
+        }
     }
 }

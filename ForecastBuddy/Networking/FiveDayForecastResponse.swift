@@ -25,3 +25,4 @@ struct HourlyWeatherResponse: Codable {
     let description:String
     let icon:String
 }
+

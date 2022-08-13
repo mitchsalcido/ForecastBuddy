@@ -39,8 +39,10 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ForecastSegueID" {
             let controller = segue.destination as! ForecastTableViewController
-            controller.coordinate = sender as? CLLocationCoordinate2D
+            let annotation = sender as? WeatherAnnotation
             controller.degreesF = degreesF
+            controller.dataController = dataController
+            controller.fiveDayForecast = annotation?.fiveDayForecast
         }
     }
     
@@ -108,12 +110,12 @@ extension MapViewController {
     // handle callout accessory tap
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         
-        guard let weatherAnnotation = view.annotation as? WeatherAnnotation, let pin = weatherAnnotation.forecast else {
+        guard let weatherAnnotation = view.annotation as? WeatherAnnotation, let pin = weatherAnnotation.currentConditions else {
             return
         }
         
         if control == view.rightCalloutAccessoryView {
-            performSegue(withIdentifier: "ForecastSegueID", sender: weatherAnnotation.coordinate)
+            performSegue(withIdentifier: "ForecastSegueID", sender: weatherAnnotation)
         }
         
         if control == view.leftCalloutAccessoryView {
@@ -153,7 +155,7 @@ extension MapViewController {
     
     func getDetailCalloutAccessory(annotation: WeatherAnnotation) -> UIView? {
         
-        guard let forecasts = annotation.forecast.hourlyForecast?.allObjects as? [HourlyForecast], let icon = forecasts.first?.name, var temperature = forecasts.first?.temperatureKelvin else {
+        guard let forecasts = annotation.currentConditions.hourlyForecast?.allObjects as? [HourlyForecast], let icon = forecasts.first?.name, var temperature = forecasts.first?.temperatureKelvin else {
             return nil
         }
     
@@ -219,6 +221,11 @@ extension MapViewController {
             forecast.longitude = coordinate.longitude
             forecast.date = Date()
             
+            let fiveDayForecast = Forecast(context: self.dataController.viewContext)
+            fiveDayForecast.latitude = coordinate.latitude
+            fiveDayForecast.longitude = coordinate.longitude
+            forecast.date = Date()
+            
             let hourlyForecast = HourlyForecast(context: self.dataController.viewContext)
             hourlyForecast.name = icon
             hourlyForecast.temperatureKelvin = temperature
@@ -233,8 +240,16 @@ extension MapViewController {
                 } else {
                     let annotation = WeatherAnnotation()
                     annotation.coordinate = coordinate
-                    annotation.forecast = forecast
+                    annotation.currentConditions = forecast
+                    annotation.fiveDayForecast = fiveDayForecast
                     self.mapView.addAnnotation(annotation)
+                    
+                    self.dataController.createFiveDayForecast(forecast: fiveDayForecast) { error in
+                        if let  _ = error {
+                            // TODO: error Alert
+                        } else {
+                        }
+                    }
                 }
             }
         }
@@ -269,7 +284,7 @@ extension MapViewController {
                 let annotation = WeatherAnnotation()
                 let coordinate = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
                 annotation.coordinate = coordinate
-                annotation.forecast = pin
+                annotation.currentConditions = pin
                 annotations.append(annotation)
             }
             mapView.addAnnotations(annotations)

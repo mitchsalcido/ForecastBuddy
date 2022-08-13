@@ -20,3 +20,9 @@ struct CurrentWeatherResponse: Codable {
     let icon:String
 }
 
+struct HourlyWeather {
+    let icon:String
+    let date: Date
+    let temperature:Double
+    let description:String
+}

@@ -10,5 +10,6 @@ import MapKit
 import CoreData
 
 class WeatherAnnotation: MKPointAnnotation {
-    var forecast:Forecast!
+    var currentConditions:Forecast!
+    var fiveDayForecast:Forecast!
 }
