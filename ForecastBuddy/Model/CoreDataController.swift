@@ -125,3 +125,10 @@ extension CoreDataController {
         }
     }
 }
+
+extension CoreDataController {
+    
+    func createFiveDayForecast(forecast:Forecast, completion: @escaping () -> Void) {
+        
+    }
+}
