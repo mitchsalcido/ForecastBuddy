@@ -40,15 +40,9 @@
                                 <action selector="degreesUnitsToggleBbiPressed:" destination="BYZ-38-t0r" id="GtH-6Q-XPm"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" enabled="NO" image="HomeBbiImage" id="NLD-0g-261">
-                            <connections>
-                                <action selector="homeBbiPressed:" destination="BYZ-38-t0r" id="D61-ch-uSk"/>
-                            </connections>
-                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="degreesUnitsToggleBbi" destination="bWd-2y-Mde" id="McL-Gr-fi8"/>
-                        <outlet property="homeBbi" destination="NLD-0g-261" id="Cb4-Xw-aBg"/>
                         <outlet property="mapView" destination="YE9-5k-JWa" id="4yh-1E-ARA"/>
                         <segue destination="Veb-yc-dZl" kind="show" identifier="ForecastSegueID" id="g54-Uu-3yQ"/>
                     </connections>
@@ -157,7 +151,6 @@
     </scenes>
     <resources>
         <image name="04d" width="50" height="50"/>
-        <image name="HomeBbiImage" width="22" height="22"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

@@ -7,26 +7,19 @@
 
 import UIKit
 import MapKit
-import CoreLocation
 import CoreData
 
 // 37.77° N lat, -122.41° W lon San Fran
 // 39.73° N lat, -121.84° W lon Chico
-class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate {
+class MapViewController: UIViewController, MKMapViewDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var homeBbi: UIBarButtonItem!
     @IBOutlet weak var degreesUnitsToggleBbi: UIBarButtonItem!
     
     var dataController:CoreDataController!
-    
-    var locationManager:CLLocationManager!
-    
-    var targetRegion:MKCoordinateRegion?
+        
     var degreesF:Bool!
         
-    let DISTANCE_RESOLUTION = 500.0 // 500 meters
-    let MILE_IN_METERS = 1600.0
     let WEATHER_UPDATE_INTERVAL:TimeInterval = 30.0//10800.0
     
     override func viewDidLoad() {
@@ -41,10 +34,6 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
 
         degreesF = UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
-
-        locationManager = CLLocationManager()
-        locationManager.delegate = self
-        locationManager.requestWhenInUseAuthorization()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -53,10 +42,6 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
             controller.coordinate = sender as? CLLocationCoordinate2D
             controller.degreesF = degreesF
         }
-    }
-    
-    @IBAction func homeBbiPressed(_ sender: Any) {
-        locationManager.requestLocation()
     }
     
     @IBAction func degreesUnitsToggleBbiPressed(_ sender: Any) {
@@ -82,7 +67,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerD
         let coordinate = mapView.convert(pressLocation, toCoordinateFrom: mapView)
         
         if longPressGr.state == .began {
-            addNewPin(coordinate: coordinate)
+            addNewForecast(coordinate: coordinate)
         }
     }
     
@@ -140,44 +125,12 @@ extension MapViewController {
             mapView.removeAnnotation(weatherAnnotation)
         }
     }
-    
-    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        
-        if let targetRegion = targetRegion {
-            if regionsEqual(regionA: targetRegion, regionB: mapView.region, metersResolution: DISTANCE_RESOLUTION) {
-                self.targetRegion = nil
-                
-                addNewPin(coordinate: mapView.region.center)
-
-                let annotations = mapView.annotations(in: mapView.visibleMapRect) as! Set<WeatherAnnotation>
-                
-                var nearbyPins:[Forecast] = []
-                for annotation in annotations {
-                    if coordinatesEqual(coordA: mapView.region.center, coordB: annotation.coordinate, metersResolution: MILE_IN_METERS) {
-                        
-                        print("removing rearby annot's")
-                        mapView.removeAnnotation(annotation)
-                        if let pin = annotation.forecast {
-                            nearbyPins.append(pin)
-                        }
-                    }
-                }
-                dataController.deleteManagedObjects(objects: nearbyPins) { error in
-                    if let _ = error {
-                        print("bad remove annot/pin")
-                    }
-                }
-            }
-        }
-    }
 
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        homeBbi.isEnabled = false
         degreesUnitsToggleBbi.isEnabled = false
     }
     
     func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
-        homeBbi.isEnabled = true
         degreesUnitsToggleBbi.isEnabled = true
     }
 }
@@ -239,29 +192,6 @@ extension MapViewController {
 
 extension MapViewController {
     
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        homeBbi.isEnabled = manager.authorizationStatus == .authorizedWhenInUse
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.first else {
-            return
-        }
-        
-        let currentLocation = CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-        let span = MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
-        let region = MKCoordinateRegion(center: currentLocation, span: span)
-        targetRegion = region
-        mapView.setRegion(region, animated: true)
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        // TODO: location fail alert
-    }
-}
-
-extension MapViewController {
-    
     func regionsEqual(regionA:MKCoordinateRegion, regionB:MKCoordinateRegion, metersResolution:Double) -> Bool {
         
         return coordinatesEqual(coordA: regionA.center, coordB: regionB.center, metersResolution: metersResolution)
@@ -276,7 +206,7 @@ extension MapViewController {
 
 extension MapViewController {
     
-    func addNewPin(coordinate: CLLocationCoordinate2D) {
+    func addNewForecast(coordinate: CLLocationCoordinate2D) {
         
         OpenWeatherAPI.getCurrentWeather(longitude: coordinate.longitude, latitude: coordinate.latitude) { response, error in
             
@@ -299,6 +229,7 @@ extension MapViewController {
             self.dataController.saveContext(context: self.dataController.viewContext) { error in
                 
                 if let _ = error {
+                    // TODO: Save error alert
                 } else {
                     let annotation = WeatherAnnotation()
                     annotation.coordinate = coordinate
@@ -350,7 +281,7 @@ extension MapViewController {
             }
             
             for coordinate in oldCoordinates {
-                addNewPin(coordinate: coordinate)
+                addNewForecast(coordinate: coordinate)
             }
         } catch {
             // TODO: bad pins fetch error alert
