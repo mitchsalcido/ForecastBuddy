@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21G72" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="CurrentCondition" representedClassName="CurrentCondition" syncable="YES" codeGenerationType="class">
+        <attribute name="icon" optional="YES" attributeType="String"/>
+        <attribute name="temperatureKelvin" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="forecast" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Forecast" inverseName="currentCondition" inverseEntity="Forecast"/>
+    </entity>
     <entity name="Forecast" representedClassName="Forecast" syncable="YES" codeGenerationType="class">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="latitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="longitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="currentCondition" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="CurrentCondition" inverseName="forecast" inverseEntity="CurrentCondition"/>
         <relationship name="hourlyForecast" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="HourlyForecast" inverseName="forecast" inverseEntity="HourlyForecast"/>
     </entity>
     <entity name="HourlyForecast" representedClassName="HourlyForecast" syncable="YES" codeGenerationType="class">
@@ -14,7 +20,8 @@
         <relationship name="forecast" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Forecast" inverseName="hourlyForecast" inverseEntity="Forecast"/>
     </entity>
     <elements>
+        <element name="Forecast" positionX="-444.7734375" positionY="-25.48828125" width="128" height="118"/>
         <element name="HourlyForecast" positionX="-63" positionY="-45" width="128" height="118"/>
-        <element name="Forecast" positionX="-330.30859375" positionY="-81.9296875" width="128" height="103"/>
+        <element name="CurrentCondition" positionX="-178.00390625" positionY="161.1328125" width="128" height="88"/>
     </elements>
 </model>

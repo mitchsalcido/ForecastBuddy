@@ -30,6 +30,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         // retrieve dataController
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         dataController = appDelegate.dataController
+        
         fetchCurrentForecasts()
 
         degreesF = UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
@@ -39,10 +40,10 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ForecastSegueID" {
             let controller = segue.destination as! ForecastTableViewController
-            let annotation = sender as? WeatherAnnotation
+            let forecast = sender as? Forecast
             controller.degreesF = degreesF
             controller.dataController = dataController
-            controller.fiveDayForecast = annotation?.fiveDayForecast
+            controller.forecast = forecast
         }
     }
     
@@ -72,7 +73,6 @@ class MapViewController: UIViewController, MKMapViewDelegate {
             addNewForecast(coordinate: coordinate)
         }
     }
-    
 }
 
 // MARK: MapView Delegate
@@ -110,20 +110,21 @@ extension MapViewController {
     // handle callout accessory tap
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         
-        guard let weatherAnnotation = view.annotation as? WeatherAnnotation, let pin = weatherAnnotation.currentConditions else {
+        guard let weatherAnnotation = view.annotation as? WeatherAnnotation, let forecast = weatherAnnotation.forecast else {
             return
         }
         
         if control == view.rightCalloutAccessoryView {
-            performSegue(withIdentifier: "ForecastSegueID", sender: weatherAnnotation)
+            performSegue(withIdentifier: "ForecastSegueID", sender: forecast)
         }
         
         if control == view.leftCalloutAccessoryView {
-            dataController.deleteManagedObjects(objects: [pin]) { error in
+            dataController.deleteManagedObjects(objects: [forecast]) { error in
                 if let _ = error {
                     print("pin delete error")
                 }
             }
+            
             mapView.removeAnnotation(weatherAnnotation)
         }
     }
@@ -154,13 +155,13 @@ extension MapViewController {
     }
     
     func getDetailCalloutAccessory(annotation: WeatherAnnotation) -> UIView? {
-        
-        guard let forecasts = annotation.currentConditions.hourlyForecast?.allObjects as? [HourlyForecast], let icon = forecasts.first?.name, var temperature = forecasts.first?.temperatureKelvin else {
+
+        guard let currentCondition = annotation.forecast.currentCondition, let icon = currentCondition.icon else {
             return nil
         }
-    
+
         let detailView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 50.0))
-        
+
         let imageView = UIImageView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 35.0))
         imageView.contentMode = .scaleAspectFit
 
@@ -171,6 +172,7 @@ extension MapViewController {
         }
         detailView.addSubview(imageView)
         
+        var temperature = currentCondition.temperatureKelvin
         if degreesF {
             temperature = 1.8 * (temperature - 273.0) + 32.0
         } else {
@@ -194,20 +196,6 @@ extension MapViewController {
 
 extension MapViewController {
     
-    func regionsEqual(regionA:MKCoordinateRegion, regionB:MKCoordinateRegion, metersResolution:Double) -> Bool {
-        
-        return coordinatesEqual(coordA: regionA.center, coordB: regionB.center, metersResolution: metersResolution)
-    }
-    
-    func coordinatesEqual(coordA:CLLocationCoordinate2D, coordB: CLLocationCoordinate2D, metersResolution:Double) -> Bool {
-        let locationA = CLLocation(latitude: coordA.latitude, longitude: coordA.longitude)
-        let locationB = CLLocation(latitude: coordB.latitude, longitude: coordB.longitude)
-        return locationB.distance(from: locationA) < metersResolution
-    }
-}
-
-extension MapViewController {
-    
     func addNewForecast(coordinate: CLLocationCoordinate2D) {
         
         OpenWeatherAPI.getCurrentWeather(longitude: coordinate.longitude, latitude: coordinate.latitude) { response, error in
@@ -220,18 +208,11 @@ extension MapViewController {
             forecast.latitude = coordinate.latitude
             forecast.longitude = coordinate.longitude
             forecast.date = Date()
-            
-            let fiveDayForecast = Forecast(context: self.dataController.viewContext)
-            fiveDayForecast.latitude = coordinate.latitude
-            fiveDayForecast.longitude = coordinate.longitude
-            forecast.date = Date()
-            
-            let hourlyForecast = HourlyForecast(context: self.dataController.viewContext)
-            hourlyForecast.name = icon
-            hourlyForecast.temperatureKelvin = temperature
-            hourlyForecast.date = Date()
-            
-            hourlyForecast.forecast = forecast
+          
+            let currentCondition = CurrentCondition(context: self.dataController.viewContext)
+            currentCondition.icon = icon
+            currentCondition.temperatureKelvin = temperature
+            currentCondition.forecast = forecast
             
             self.dataController.saveContext(context: self.dataController.viewContext) { error in
                 
@@ -240,14 +221,12 @@ extension MapViewController {
                 } else {
                     let annotation = WeatherAnnotation()
                     annotation.coordinate = coordinate
-                    annotation.currentConditions = forecast
-                    annotation.fiveDayForecast = fiveDayForecast
+                    annotation.forecast = forecast
                     self.mapView.addAnnotation(annotation)
                     
-                    self.dataController.createFiveDayForecast(forecast: fiveDayForecast) { error in
+                    self.dataController.createFiveDayForecast(forecast: forecast) { error in
                         if let  _ = error {
                             // TODO: error Alert
-                        } else {
                         }
                     }
                 }
@@ -260,6 +239,24 @@ extension MapViewController {
     
     func fetchCurrentForecasts() {
         
+        let fetchRequest:NSFetchRequest<Forecast> = NSFetchRequest(entityName: "Forecast")
+        do {
+            let forecasts = try dataController.viewContext.fetch(fetchRequest)
+            
+            var annotations:[WeatherAnnotation] = []
+            for forecast in forecasts {
+                let annotation = WeatherAnnotation()
+                let coordinate = CLLocationCoordinate2D(latitude: forecast.latitude, longitude: forecast.longitude)
+                annotation.coordinate = coordinate
+                annotation.forecast = forecast
+                annotations.append(annotation)
+                print("adding forecast")
+            }
+            mapView.addAnnotations(annotations)
+        } catch {
+            // TODO: Fetch error alert
+        }
+        /*
         let fetchRequest:NSFetchRequest<Forecast> = NSFetchRequest(entityName: "Forecast")
         let predicate = NSPredicate(format: "hourlyForecast.@count == 1")
         fetchRequest.predicate = predicate
@@ -301,5 +298,6 @@ extension MapViewController {
         } catch {
             // TODO: bad pins fetch error alert
         }
+         */
     }
 }

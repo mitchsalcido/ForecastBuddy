@@ -6,15 +6,14 @@
 //
 
 import UIKit
-import CoreLocation
 import CoreData
 
 class ForecastTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
+    var forecast:Forecast!
     var degreesF:Bool!
     var dailyForecastArray:[[String:[HourlyWeather]]] = []
     var dataController:CoreDataController!
-    var fiveDayForecast:Forecast!
     var fetchedResultsController:NSFetchedResultsController<HourlyForecast>!
     
     override func viewDidLoad() {
@@ -87,7 +86,7 @@ extension ForecastTableViewController {
         
         let request:NSFetchRequest<HourlyForecast> = NSFetchRequest(entityName: "HourlyForecast")
         let sortDescriptor = NSSortDescriptor(key: "date", ascending: true)
-        let predicate = NSPredicate(format: "forecast = %@", fiveDayForecast)
+        let predicate = NSPredicate(format: "forecast = %@", forecast)
         request.sortDescriptors = [sortDescriptor]
         request.predicate = predicate
         
