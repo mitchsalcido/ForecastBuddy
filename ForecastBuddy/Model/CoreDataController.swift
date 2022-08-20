@@ -141,13 +141,18 @@ extension CoreDataController {
             self.performBackgroundOp { privateContext in
                 let privateForecast = privateContext.object(with: objectID) as! Forecast
                 
+                var dayOfWeek:Int16 = 0
+                var lastDay = ""
                 for hourly in response {
                     if let name = hourly.weather.first?.icon, let description = hourly.weather.first?.description {
                         let hourlyForecast = HourlyForecast(context: privateContext)
                         let date = Date(timeIntervalSince1970: Double(hourly.dt))
+                        if lastDay != date.dayString() {
+                            dayOfWeek += 1
+                            lastDay = date.dayString()
+                        }
                         hourlyForecast.date = date
-                        hourlyForecast.dayOfWeek = date.dayString()
-                        print("day: \(hourlyForecast.dayOfWeek!)")
+                        hourlyForecast.dayOfWeek = dayOfWeek
                         hourlyForecast.name = name
                         hourlyForecast.temperatureKelvin = hourly.main.temp
                         hourlyForecast.weatherDescription = description
@@ -161,3 +166,4 @@ extension CoreDataController {
         }
     }
 }
+
