@@ -28,21 +28,47 @@ class ForecastTableViewController: UITableViewController, NSFetchedResultsContro
 extension ForecastTableViewController {
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return dailyForecastArray.count
+        //return dailyForecastArray.count
+        
+        return fetchedResultsController.sections?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dailyForecastArray[section].values.first?.count ?? 0
+        //return dailyForecastArray[section].values.first?.count ?? 0
+        
+        return fetchedResultsController.sections?[section].numberOfObjects ?? 0
     }
 
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return dailyForecastArray[section].keys.first
+        //return dailyForecastArray[section].keys.first
+
+        if let hourly = fetchedResultsController.sections?[section].objects?.first as? HourlyForecast {
+            return hourly.date?.dayString()
+        } else {
+            print("nil header title")
+        }
+        
+        return nil
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "ForecastCellID", for: indexPath) as! ForecastTableViewCell
 
+        let hourly = fetchedResultsController.object(at: indexPath)
+        cell.timeLabel.text = hourly.date?.timeOfDayString()
+        
+        var temperature:Double!
+        if degreesF {
+            temperature = 1.8 * (hourly.temperatureKelvin - 273.0) + 32.0
+        } else {
+            temperature = hourly.temperatureKelvin - 273.15
+        }
+        
+        cell.temperatureLabel.text = "\(Int(temperature))°"
+        cell.weatherDescriptionLabel.text = hourly.weatherDescription
+        cell.iconImageView.image = UIImage(named: hourly.name ?? "")
+        /*
         // Configure the cell...
         let daily = dailyForecastArray[indexPath.section]
         if let hourly = daily.values.first?[indexPath.row] {
@@ -60,6 +86,7 @@ extension ForecastTableViewController {
             cell.weatherDescriptionLabel.text = hourly.description
             cell.iconImageView.image = UIImage(named: hourly.icon)
         }
+         */
         return cell
     }
     
@@ -90,13 +117,13 @@ extension ForecastTableViewController {
         request.sortDescriptors = [sortDescriptor]
         request.predicate = predicate
         
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: request, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: request, managedObjectContext: dataController.viewContext, sectionNameKeyPath: "dayOfWeek", cacheName: nil)
         
         fetchedResultsController.delegate = self
         
         do {
             try fetchedResultsController.performFetch()
-            dailyForecastArray = configureDailyForecastArray()
+            //dailyForecastArray = configureDailyForecastArray()
             tableView.reloadData()
         } catch {
             // TODO: alert error

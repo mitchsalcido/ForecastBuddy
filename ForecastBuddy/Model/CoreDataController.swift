@@ -144,7 +144,10 @@ extension CoreDataController {
                 for hourly in response {
                     if let name = hourly.weather.first?.icon, let description = hourly.weather.first?.description {
                         let hourlyForecast = HourlyForecast(context: privateContext)
-                        hourlyForecast.date =  Date(timeIntervalSince1970: Double(hourly.dt))
+                        let date = Date(timeIntervalSince1970: Double(hourly.dt))
+                        hourlyForecast.date = date
+                        hourlyForecast.dayOfWeek = date.dayString()
+                        print("day: \(hourlyForecast.dayOfWeek!)")
                         hourlyForecast.name = name
                         hourlyForecast.temperatureKelvin = hourly.main.temp
                         hourlyForecast.weatherDescription = description
