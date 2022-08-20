@@ -242,51 +242,30 @@ extension MapViewController {
         let fetchRequest:NSFetchRequest<Forecast> = NSFetchRequest(entityName: "Forecast")
         do {
             let forecasts = try dataController.viewContext.fetch(fetchRequest)
+            var oldForecasts:[Forecast] = []
+            var oldCoordinates:[CLLocationCoordinate2D] = []
+            var currentForecasts:[Forecast] = []
+            for forecast in forecasts {
+                let now = Date()
+                if let date = forecast.date, date.distance(to: now) > WEATHER_UPDATE_INTERVAL {
+                    oldForecasts.append(forecast)
+                    oldCoordinates.append(CLLocationCoordinate2D(latitude: forecast.latitude, longitude: forecast.longitude))
+                } else {
+                    currentForecasts.append(forecast)
+                }
+            }
             
             var annotations:[WeatherAnnotation] = []
-            for forecast in forecasts {
+            for forecast in currentForecasts {
                 let annotation = WeatherAnnotation()
                 let coordinate = CLLocationCoordinate2D(latitude: forecast.latitude, longitude: forecast.longitude)
                 annotation.coordinate = coordinate
                 annotation.forecast = forecast
                 annotations.append(annotation)
-                print("adding forecast")
-            }
-            mapView.addAnnotations(annotations)
-        } catch {
-            // TODO: Fetch error alert
-        }
-        /*
-        let fetchRequest:NSFetchRequest<Forecast> = NSFetchRequest(entityName: "Forecast")
-        let predicate = NSPredicate(format: "hourlyForecast.@count == 1")
-        fetchRequest.predicate = predicate
-        
-        do {
-            let results = try dataController.viewContext.fetch(fetchRequest)
-            var oldPins:[Forecast] = []
-            var oldCoordinates:[CLLocationCoordinate2D] = []
-            var currentPins:[Forecast] = []
-            for pin in results {
-                let now = Date()
-                if let date = pin.date, date.distance(to: now) > WEATHER_UPDATE_INTERVAL {
-                    oldPins.append(pin)
-                    oldCoordinates.append(CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude))
-                } else {
-                    currentPins.append(pin)
-                }
-            }
-            
-            var annotations:[WeatherAnnotation] = []
-            for pin in currentPins {
-                let annotation = WeatherAnnotation()
-                let coordinate = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
-                annotation.coordinate = coordinate
-                annotation.currentConditions = pin
-                annotations.append(annotation)
             }
             mapView.addAnnotations(annotations)
             
-            dataController.deleteManagedObjects(objects: oldPins) { error in
+            dataController.deleteManagedObjects(objects: oldForecasts) { error in
                 if let _ = error {
                     // TODO: delete pins error alert
                 }
@@ -298,6 +277,5 @@ extension MapViewController {
         } catch {
             // TODO: bad pins fetch error alert
         }
-         */
     }
 }
