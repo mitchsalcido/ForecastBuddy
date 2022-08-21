@@ -31,6 +31,12 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         dataController = appDelegate.dataController
         
+        // info button to navigate to AppInfo
+        let button = UIButton(type: .infoLight)
+        button.addTarget(self, action: #selector(appInfoButtonPressed(_:)), for: .touchUpInside)
+        let bbi = UIBarButtonItem(customView: button)
+        navigationItem.rightBarButtonItem = bbi
+        
         fetchCurrentForecasts()
 
         degreesF = UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
@@ -277,5 +283,10 @@ extension MapViewController {
         } catch {
             // TODO: bad pins fetch error alert
         }
+    }
+    
+    // navigate to AppInfoViewController
+    @objc func appInfoButtonPressed(_ sender: Any) {
+        performSegue(withIdentifier: "AppInfoSegueID", sender: nil)
     }
 }
