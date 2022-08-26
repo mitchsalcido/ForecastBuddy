@@ -105,7 +105,9 @@ extension MapViewController {
             pinView.leftCalloutAccessoryView = getLeftCalloutAccessory()
             
             // right accessory...navigate to WeatherDetailController
-            pinView.rightCalloutAccessoryView = getRightCalloutAccessory()
+            if let _ = weatherAnnotation.forecast {
+                pinView.rightCalloutAccessoryView = getRightCalloutAccessory()
+            }
             
             // detail accessory...view with current conditions
             pinView.detailCalloutAccessoryView = getDetailCalloutAccessory(annotation: weatherAnnotation)
@@ -162,34 +164,37 @@ extension MapViewController {
     
     func getDetailCalloutAccessory(annotation: WeatherAnnotation) -> UIView? {
 
-        guard let currentCondition = annotation.forecast.currentCondition, let icon = currentCondition.icon else {
-            return nil
-        }
-
         let detailView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 50.0))
-
-        let imageView = UIImageView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 35.0))
-        imageView.contentMode = .scaleAspectFit
-
-        if let image = UIImage(named: icon) {
-            imageView.image = image
-        } else {
-            // TODO: default icon
-        }
-        detailView.addSubview(imageView)
         
-        var temperature = currentCondition.temperatureKelvin
-        if degreesF {
-            temperature = 1.8 * (temperature - 273.0) + 32.0
+        if let forecast = annotation.forecast, let currentCondition = forecast.currentCondition, let icon = currentCondition.icon {
+            
+            let imageView = UIImageView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 35.0))
+            imageView.contentMode = .scaleAspectFit
+
+            if let image = UIImage(named: icon) {
+                imageView.image = image
+            } else {
+                // TODO: default icon
+            }
+            detailView.addSubview(imageView)
+            
+            var temperature = currentCondition.temperatureKelvin
+            if degreesF {
+                temperature = 1.8 * (temperature - 273.0) + 32.0
+            } else {
+                temperature = temperature - 273.15
+            }
+            
+            let label = UILabel(frame: CGRect(x: 0.0, y: 35.0, width: 50.0, height: 15.0))
+            label.text = " \(Int(temperature))°"
+            label.textAlignment = .center
+            label.allowsDefaultTighteningForTruncation = true
+            detailView.addSubview(label)
         } else {
-            temperature = temperature - 273.15
+            let activityIndicator = UIActivityIndicatorView(frame: detailView.bounds)
+            activityIndicator.startAnimating()
+            detailView.addSubview(activityIndicator)
         }
-        
-        let label = UILabel(frame: CGRect(x: 0.0, y: 35.0, width: 50.0, height: 15.0))
-        label.text = " \(Int(temperature))°"
-        label.textAlignment = .center
-        label.allowsDefaultTighteningForTruncation = true
-        detailView.addSubview(label)
 
         let widthConstraint = detailView.widthAnchor.constraint(equalToConstant: 50.0)
         let heightConstraint = detailView.heightAnchor.constraint(equalToConstant: 50.0)
@@ -201,9 +206,13 @@ extension MapViewController {
 }
 
 extension MapViewController {
-    
+
     func addNewForecast(coordinate: CLLocationCoordinate2D) {
         
+        let annotation = WeatherAnnotation()
+        annotation.coordinate = coordinate
+        self.mapView.addAnnotation(annotation)
+
         OpenWeatherAPI.getCurrentWeather(longitude: coordinate.longitude, latitude: coordinate.latitude) { response, error in
             
             guard let icon = response?.weather.first?.icon, let temperature = response?.main.temp else {
@@ -221,18 +230,20 @@ extension MapViewController {
             currentCondition.forecast = forecast
             
             self.dataController.saveContext(context: self.dataController.viewContext) { error in
-                
                 if let _ = error {
-                    // TODO: Save error alert
+                    // TODO: save error alert
                 } else {
-                    let annotation = WeatherAnnotation()
-                    annotation.coordinate = coordinate
-                    annotation.forecast = forecast
-                    self.mapView.addAnnotation(annotation)
                     
-                    self.dataController.createFiveDayForecast(forecast: forecast) { error in
-                        if let  _ = error {
-                            // TODO: error Alert
+                    if let view = self.mapView.view(for: annotation) as? MKMarkerAnnotationView {
+                        
+                        annotation.forecast = forecast
+                        view.detailCalloutAccessoryView = self.getDetailCalloutAccessory(annotation: annotation)
+                        view.rightCalloutAccessoryView = self.getRightCalloutAccessory()
+                        
+                        self.dataController.createFiveDayForecast(forecast: forecast) { error in
+                            if let  _ = error {
+                                // TODO: error Alert
+                            }
                         }
                     }
                 }
