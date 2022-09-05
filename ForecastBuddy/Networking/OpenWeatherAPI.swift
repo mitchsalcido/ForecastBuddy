@@ -58,24 +58,24 @@ class OpenWeatherAPI {
 
 extension OpenWeatherAPI {
     
-    class func getCurrentWeather(longitude: Double, latitude: Double, completion: @escaping (CurrentForecastResponse?, LocalizedError?) -> Void) {
+    class func getCurrentWeather(longitude: Double, latitude: Double, completion: @escaping (CurrentForecastResponse?, LocalizedError?) -> Void) -> URLSessionDataTask? {
         
-        taskGET(url: Endpoints.currentWeather(longitude: longitude, latitude: latitude).url, responseType: CurrentForecastResponse.self, completion: completion)
+        return taskGET(url: Endpoints.currentWeather(longitude: longitude, latitude: latitude).url, responseType: CurrentForecastResponse.self, completion: completion)
     }
     
     class func getFiveDayForecast(longitude: Double, latitude: Double, completion: @escaping (FiveDayForecastResponse?, LocalizedError?) -> Void) {
         
-        taskGET(url: Endpoints.fiveDayForecast(longitude: longitude, latitude: latitude).url, responseType: FiveDayForecastResponse.self, completion: completion)
+        let _ = taskGET(url: Endpoints.fiveDayForecast(longitude: longitude, latitude: latitude).url, responseType: FiveDayForecastResponse.self, completion: completion)
     }
 }
 
 extension OpenWeatherAPI {
     
-    class func taskGET<ResponseType: Decodable>(url: URL?, responseType: ResponseType.Type, completion: @escaping (ResponseType?, LocalizedError?) -> Void) {
+    class func taskGET<ResponseType: Decodable>(url: URL?, responseType: ResponseType.Type, completion: @escaping (ResponseType?, LocalizedError?) -> Void) -> URLSessionDataTask? {
         
         guard let url = url else {
             print("bad url")
-            return
+            return nil
         }
         
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
@@ -98,5 +98,6 @@ extension OpenWeatherAPI {
             }
         }
         task.resume()
+        return task
     }
 }

@@ -95,8 +95,10 @@ extension MapViewController {
         // dequeue or create new if nil
         if let pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reUseID) as? MKMarkerAnnotationView {
             pinView.annotation = weatherAnnotation
+            print("reusing pinView")
             return pinView
         } else {
+            print("new pinView")
             pinView = MKMarkerAnnotationView(annotation: weatherAnnotation, reuseIdentifier: reUseID)
             pinView.canShowCallout = true
             pinView.animatesWhenAdded = true
@@ -213,7 +215,7 @@ extension MapViewController {
         annotation.coordinate = coordinate
         self.mapView.addAnnotation(annotation)
 
-        OpenWeatherAPI.getCurrentWeather(longitude: coordinate.longitude, latitude: coordinate.latitude) { response, error in
+        annotation.task = OpenWeatherAPI.getCurrentWeather(longitude: coordinate.longitude, latitude: coordinate.latitude) { response, error in
             
             guard let icon = response?.weather.first?.icon, let temperature = response?.main.temp else {
                 return
@@ -238,11 +240,12 @@ extension MapViewController {
                         
                         annotation.forecast = forecast
                         view.detailCalloutAccessoryView = self.getDetailCalloutAccessory(annotation: annotation)
-                        view.rightCalloutAccessoryView = self.getRightCalloutAccessory()
                         
                         self.dataController.createFiveDayForecast(forecast: forecast) { error in
                             if let  _ = error {
                                 // TODO: error Alert
+                            } else {
+                                view.rightCalloutAccessoryView = self.getRightCalloutAccessory()
                             }
                         }
                     }

@@ -11,4 +11,5 @@ import CoreData
 
 class WeatherAnnotation: MKPointAnnotation {
     var forecast:Forecast? = nil
+    var task:URLSessionDataTask? = nil
 }
