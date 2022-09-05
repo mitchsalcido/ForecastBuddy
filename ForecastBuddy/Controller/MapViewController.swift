@@ -199,6 +199,13 @@ extension MapViewController {
 
 extension MapViewController {
 
+    func addForecastToMap(coordinate: CLLocationCoordinate2D) {
+     
+        let annotation = WeatherAnnotation()
+        annotation.coordinate = coordinate
+        self.mapView.addAnnotation(annotation)
+    }
+    
     func addNewForecast(coordinate: CLLocationCoordinate2D) {
         
         let annotation = WeatherAnnotation()
