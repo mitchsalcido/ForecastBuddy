@@ -144,7 +144,7 @@ extension CoreDataController {
                 var dayOfWeek:Int16 = 0
                 var lastDay = ""
                 for hourly in response {
-                    if let name = hourly.weather.first?.icon, let description = hourly.weather.first?.description {
+                    if let icon = hourly.weather.first?.icon, let description = hourly.weather.first?.description {
                         let hourlyForecast = HourlyForecast(context: privateContext)
                         let date = Date(timeIntervalSince1970: Double(hourly.dt))
                         if lastDay != date.dayString() {
@@ -153,7 +153,7 @@ extension CoreDataController {
                         }
                         hourlyForecast.date = date
                         hourlyForecast.dayOfWeek = dayOfWeek
-                        hourlyForecast.name = name
+                        hourlyForecast.icon = icon
                         hourlyForecast.temperatureKelvin = hourly.main.temp
                         hourlyForecast.weatherDescription = description
                         hourlyForecast.forecast = privateForecast

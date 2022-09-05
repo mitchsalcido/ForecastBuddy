@@ -87,33 +87,23 @@ extension MapViewController {
     // handle creation of annotationView
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         
-        let reUseID = "pinReuseID"
-        let pinView: MKMarkerAnnotationView!
-        
         let weatherAnnotation = annotation as! WeatherAnnotation
+        let pinView = MKMarkerAnnotationView(annotation: weatherAnnotation, reuseIdentifier: nil)
         
-        // dequeue or create new if nil
-        if let pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reUseID) as? MKMarkerAnnotationView {
-            pinView.annotation = weatherAnnotation
-            print("reusing pinView")
-            return pinView
-        } else {
-            print("new pinView")
-            pinView = MKMarkerAnnotationView(annotation: weatherAnnotation, reuseIdentifier: reUseID)
-            pinView.canShowCallout = true
-            pinView.animatesWhenAdded = true
+        pinView.canShowCallout = true
+        pinView.animatesWhenAdded = true
 
-            // left accessory...delete weatherAnnotation
-            pinView.leftCalloutAccessoryView = getLeftCalloutAccessory()
-            
-            // right accessory...navigate to WeatherDetailController
-            if let _ = weatherAnnotation.forecast {
-                pinView.rightCalloutAccessoryView = getRightCalloutAccessory()
-            }
-            
-            // detail accessory...view with current conditions
-            pinView.detailCalloutAccessoryView = getDetailCalloutAccessory(annotation: weatherAnnotation)
+        // left accessory...delete weatherAnnotation
+        pinView.leftCalloutAccessoryView = getLeftCalloutAccessory()
+        
+        // right accessory...navigate to WeatherDetailController
+        if let _ = weatherAnnotation.forecast?.hourlyForecast {
+            pinView.rightCalloutAccessoryView = getRightCalloutAccessory()
         }
+        
+        // detail accessory...view with current conditions
+        pinView.detailCalloutAccessoryView = getDetailCalloutAccessory(annotation: weatherAnnotation)
+        
         return pinView
     }
     

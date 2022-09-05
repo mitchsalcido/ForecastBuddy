@@ -65,7 +65,7 @@ extension ForecastTableViewController {
         
         cell.temperatureLabel.text = "\(Int(temperature))°"
         cell.weatherDescriptionLabel.text = hourly.weatherDescription
-        cell.iconImageView.image = UIImage(named: hourly.name ?? "")
+        cell.iconImageView.image = UIImage(named: hourly.icon ?? "")
 
         return cell
     }

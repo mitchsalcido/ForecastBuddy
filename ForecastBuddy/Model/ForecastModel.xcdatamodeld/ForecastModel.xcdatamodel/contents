@@ -15,14 +15,14 @@
     <entity name="HourlyForecast" representedClassName="HourlyForecast" syncable="YES" codeGenerationType="class">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="dayOfWeek" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="icon" optional="YES" attributeType="String"/>
         <attribute name="temperatureKelvin" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="weatherDescription" optional="YES" attributeType="String"/>
         <relationship name="forecast" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Forecast" inverseName="hourlyForecast" inverseEntity="Forecast"/>
     </entity>
     <elements>
-        <element name="CurrentCondition" positionX="-178.00390625" positionY="161.1328125" width="128" height="88"/>
+        <element name="CurrentCondition" positionX="-200.14453125" positionY="-106.61328125" width="128" height="88"/>
         <element name="Forecast" positionX="-444.7734375" positionY="-25.48828125" width="128" height="118"/>
-        <element name="HourlyForecast" positionX="-63" positionY="-45" width="128" height="119"/>
+        <element name="HourlyForecast" positionX="-197.68359375" positionY="6.6875" width="128" height="133"/>
     </elements>
 </model>
