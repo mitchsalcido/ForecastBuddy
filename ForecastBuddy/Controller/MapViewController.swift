@@ -238,10 +238,11 @@ extension MapViewController {
                         annotation.forecast = forecast
                         view.detailCalloutAccessoryView = self.getDetailCalloutAccessory(annotation: annotation)
                         
-                        self.dataController.createFiveDayForecast(forecast: forecast) { error in
+                        annotation.task = self.dataController.createFiveDayForecast(forecast: forecast) { error in
                             if let  _ = error {
                                 // TODO: error Alert
                             } else {
+                                annotation.task = nil
                                 view.rightCalloutAccessoryView = self.getRightCalloutAccessory()
                             }
                         }
