@@ -9,9 +9,9 @@
 /* Begin PBXBuildFile section */
 		301031A4289494FB009D83C5 /* WeatherAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301031A3289494FB009D83C5 /* WeatherAnnotation.swift */; };
 		301299F4289825D7001C503E /* FiveDayForecastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301299F3289825D7001C503E /* FiveDayForecastResponse.swift */; };
-		301299F628983C96001C503E /* ForecastTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301299F528983C96001C503E /* ForecastTableViewController.swift */; };
 		301299F828984A74001C503E /* ForecastTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301299F728984A74001C503E /* ForecastTableViewCell.swift */; };
 		301299FA28985776001C503E /* Date+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 301299F928985776001C503E /* Date+Ext.swift */; };
+		3056D82B28C7C84A0088A0A2 /* FiveDayForecastViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3056D82A28C7C84A0088A0A2 /* FiveDayForecastViewController.swift */; };
 		306EA75E2896ECAA0066E68D /* UIView+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 306EA75D2896ECAA0066E68D /* UIView+Ext.swift */; };
 		30787DA428B2521400F4996C /* AppInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30787DA328B2521400F4996C /* AppInfoViewController.swift */; };
 		307B221B28942A1D009FDD65 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307B221A28942A1D009FDD65 /* AppDelegate.swift */; };
@@ -49,9 +49,9 @@
 /* Begin PBXFileReference section */
 		301031A3289494FB009D83C5 /* WeatherAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherAnnotation.swift; sourceTree = "<group>"; };
 		301299F3289825D7001C503E /* FiveDayForecastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiveDayForecastResponse.swift; sourceTree = "<group>"; };
-		301299F528983C96001C503E /* ForecastTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastTableViewController.swift; sourceTree = "<group>"; };
 		301299F728984A74001C503E /* ForecastTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastTableViewCell.swift; sourceTree = "<group>"; };
 		301299F928985776001C503E /* Date+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Ext.swift"; sourceTree = "<group>"; };
+		3056D82A28C7C84A0088A0A2 /* FiveDayForecastViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiveDayForecastViewController.swift; sourceTree = "<group>"; };
 		306EA75D2896ECAA0066E68D /* UIView+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Ext.swift"; sourceTree = "<group>"; };
 		30787DA328B2521400F4996C /* AppInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfoViewController.swift; sourceTree = "<group>"; };
 		307B221728942A1D009FDD65 /* ForecastBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ForecastBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -184,8 +184,8 @@
 			isa = PBXGroup;
 			children = (
 				307B221E28942A1D009FDD65 /* MapViewController.swift */,
-				301299F528983C96001C503E /* ForecastTableViewController.swift */,
 				30787DA328B2521400F4996C /* AppInfoViewController.swift */,
+				3056D82A28C7C84A0088A0A2 /* FiveDayForecastViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -331,10 +331,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3056D82B28C7C84A0088A0A2 /* FiveDayForecastViewController.swift in Sources */,
 				306EA75E2896ECAA0066E68D /* UIView+Ext.swift in Sources */,
 				301031A4289494FB009D83C5 /* WeatherAnnotation.swift in Sources */,
 				301299F4289825D7001C503E /* FiveDayForecastResponse.swift in Sources */,
-				301299F628983C96001C503E /* ForecastTableViewController.swift in Sources */,
 				30787DA428B2521400F4996C /* AppInfoViewController.swift in Sources */,
 				307B221F28942A1D009FDD65 /* MapViewController.swift in Sources */,
 				307B221B28942A1D009FDD65 /* AppDelegate.swift in Sources */,

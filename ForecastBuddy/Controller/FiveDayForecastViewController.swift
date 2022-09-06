@@ -1,15 +1,16 @@
 //
-//  ForecastTableViewController.swift
+//  FiveDayForecastViewController.swift
 //  ForecastBuddy
 //
-//  Created by Mitchell Salcido on 8/1/22.
+//  Created by Mitchell Salcido on 9/6/22.
 //
 
 import UIKit
 import CoreData
 
-class ForecastTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
-    
+class FiveDayForecastViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+
+    @IBOutlet weak var tableView: UITableView!
     var forecast:Forecast!
     var degreesF:Bool!
     var dataController:CoreDataController!
@@ -18,25 +19,38 @@ class ForecastTableViewController: UITableViewController, NSFetchedResultsContro
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tableView.delegate = self
+        tableView.dataSource = self
+        
         title = "Five Day Forecast"
         configureHourlyForecastFrc()
+
+        if let hourly = forecast.hourlyForecast?.count, hourly == 0 {
+            let _ = dataController.createFiveDayForecast(forecast: forecast) { error in
+                if let _ = error {
+                    // TODO: network error alert
+                } else {
+                    self.configureHourlyForecastFrc()
+                }
+            }
+        }
     }
 }
 
 // MARK: - Table view data source
-extension ForecastTableViewController {
+extension FiveDayForecastViewController {
     
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         
         return fetchedResultsController.sections?.count ?? 0
     }
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 
         return fetchedResultsController.sections?[section].numberOfObjects ?? 0
     }
 
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
 
         if section == 0 {
             return "Today"
@@ -49,7 +63,7 @@ extension ForecastTableViewController {
         return nil
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "ForecastCellID", for: indexPath) as! ForecastTableViewCell
 
@@ -70,12 +84,13 @@ extension ForecastTableViewController {
         return cell
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }
 
-extension ForecastTableViewController {
+// MARK: - Helpers
+extension FiveDayForecastViewController {
     
     func configureHourlyForecastFrc() {
         

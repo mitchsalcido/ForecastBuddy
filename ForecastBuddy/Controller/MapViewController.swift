@@ -45,7 +45,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ForecastSegueID" {
-            let controller = segue.destination as! ForecastTableViewController
+            let controller = segue.destination as! FiveDayForecastViewController
             let forecast = sender as? Forecast
             controller.degreesF = degreesF
             controller.dataController = dataController
@@ -198,13 +198,6 @@ extension MapViewController {
 }
 
 extension MapViewController {
-
-    func addForecastToMap(coordinate: CLLocationCoordinate2D) {
-     
-        let annotation = WeatherAnnotation()
-        annotation.coordinate = coordinate
-        self.mapView.addAnnotation(annotation)
-    }
     
     func addNewForecast(coordinate: CLLocationCoordinate2D) {
         
@@ -232,20 +225,10 @@ extension MapViewController {
                 if let _ = error {
                     // TODO: save error alert
                 } else {
-                    
                     if let view = self.mapView.view(for: annotation) as? MKMarkerAnnotationView {
-                        
                         annotation.forecast = forecast
                         view.detailCalloutAccessoryView = self.getDetailCalloutAccessory(annotation: annotation)
-                        
-                        annotation.task = self.dataController.createFiveDayForecast(forecast: forecast) { error in
-                            if let  _ = error {
-                                // TODO: error Alert
-                            } else {
-                                annotation.task = nil
-                                view.rightCalloutAccessoryView = self.getRightCalloutAccessory()
-                            }
-                        }
+                        view.rightCalloutAccessoryView = self.getRightCalloutAccessory()
                     }
                 }
             }
