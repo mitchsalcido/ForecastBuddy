@@ -11,6 +11,8 @@ import CoreData
 class FiveDayForecastViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
     var forecast:Forecast!
     var degreesF:Bool!
     var dataController:CoreDataController!
@@ -106,6 +108,10 @@ extension FiveDayForecastViewController {
         do {
             try fetchedResultsController.performFetch()
             tableView.reloadData()
+            
+            if let isEmpty = fetchedResultsController.fetchedObjects?.isEmpty, isEmpty == false {
+                activityIndicator.stopAnimating()
+            }
         } catch {
             // TODO: alert error
         }

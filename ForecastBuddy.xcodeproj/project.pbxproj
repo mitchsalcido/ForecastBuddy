@@ -184,8 +184,8 @@
 			isa = PBXGroup;
 			children = (
 				307B221E28942A1D009FDD65 /* MapViewController.swift */,
-				30787DA328B2521400F4996C /* AppInfoViewController.swift */,
 				3056D82A28C7C84A0088A0A2 /* FiveDayForecastViewController.swift */,
+				30787DA328B2521400F4996C /* AppInfoViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
