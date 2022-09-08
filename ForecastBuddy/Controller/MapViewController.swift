@@ -205,32 +205,24 @@ extension MapViewController {
         annotation.coordinate = coordinate
         self.mapView.addAnnotation(annotation)
 
-        annotation.task = OpenWeatherAPI.getCurrentWeather(longitude: coordinate.longitude, latitude: coordinate.latitude) { response, error in
+        annotation.task = dataController.getCurrentForecast(longitude: coordinate.longitude, latitude: coordinate.latitude) { forecastID, error in
             
-            guard let icon = response?.weather.first?.icon, let temperature = response?.main.temp else {
+            guard let forecastID = forecastID else {
+                if let _ = error {
+                    // TODO: error alert
+                } else {
+                    // TODO: error alert
+                }
                 return
             }
             
-            let forecast = Forecast(context: self.dataController.viewContext)
-            forecast.latitude = coordinate.latitude
-            forecast.longitude = coordinate.longitude
-            forecast.date = Date()
-          
-            let currentCondition = CurrentCondition(context: self.dataController.viewContext)
-            currentCondition.icon = icon
-            currentCondition.temperatureKelvin = temperature
-            currentCondition.forecast = forecast
+            let forecast = self.dataController.viewContext.object(with: forecastID) as! Forecast
             
-            self.dataController.saveContext(context: self.dataController.viewContext) { error in
-                if let _ = error {
-                    // TODO: save error alert
-                } else {
-                    if let view = self.mapView.view(for: annotation) as? MKMarkerAnnotationView {
-                        annotation.forecast = forecast
-                        view.detailCalloutAccessoryView = self.getDetailCalloutAccessory(annotation: annotation)
-                        view.rightCalloutAccessoryView = self.getRightCalloutAccessory()
-                    }
-                }
+            if let view = self.mapView.view(for: annotation) as? MKMarkerAnnotationView {
+                
+                annotation.forecast = forecast
+                view.detailCalloutAccessoryView = self.getDetailCalloutAccessory(annotation: annotation)
+                view.rightCalloutAccessoryView = self.getRightCalloutAccessory()
             }
         }
     }

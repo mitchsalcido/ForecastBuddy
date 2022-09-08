@@ -10,6 +10,7 @@
  */
 import Foundation
 import CoreData
+import UIKit
 
 class CoreDataController {
     
@@ -128,7 +129,41 @@ extension CoreDataController {
 
 extension CoreDataController {
     
-    func createFiveDayForecast(forecast:Forecast, completion: @escaping (LocalizedError?) -> Void) -> URLSessionDataTask? {
+    func getCurrentForecast(longitude: Double, latitude: Double, completion: @escaping (NSManagedObjectID?, LocalizedError?) -> Void) -> URLSessionDataTask? {
+        
+        return OpenWeatherAPI.getCurrentWeather(longitude: longitude, latitude: latitude) { response, error in
+            
+            guard let icon = response?.weather.first?.icon, let temperature = response?.main.temp else {
+                completion(nil, OpenWeatherAPI.OpenWeatherAPIError.badData)
+                return
+            }
+            
+            self.performBackgroundOp { privateContext in
+                let forecast = Forecast(context: privateContext)
+                forecast.latitude = latitude
+                forecast.longitude = longitude
+                forecast.date = Date()
+              
+                let currentCondition = CurrentCondition(context: privateContext)
+                currentCondition.icon = icon
+                currentCondition.temperatureKelvin = temperature
+                currentCondition.forecast = forecast
+                
+                self.saveContext(context: privateContext) { error in
+                    let objectID = forecast.objectID
+                    DispatchQueue.main.async {
+                        if let _ = error {
+                            completion(nil, CoreDataError.badSave)
+                        } else {
+                            completion(objectID, nil)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    func getFiveDayForecast(forecast:Forecast, completion: @escaping (LocalizedError?) -> Void) -> URLSessionDataTask? {
         
         let objectID = forecast.objectID
         return OpenWeatherAPI.getFiveDayForecast(longitude: forecast.longitude, latitude: forecast.latitude) { response, error in
@@ -160,7 +195,9 @@ extension CoreDataController {
                     }
                 }
                 self.saveContext(context: privateContext) { error in
-                    completion(error)
+                    DispatchQueue.main.async {
+                        completion(error)
+                    }
                 }
             }
         }
