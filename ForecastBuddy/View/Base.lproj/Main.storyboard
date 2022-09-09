@@ -30,7 +30,7 @@
             </objects>
             <point key="canvasLocation" x="2630" y="-721"/>
         </scene>
-        <!--Map View Controller-->
+        <!--Forecast Buddy-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="MapViewController" customModule="ForecastBuddy" customModuleProvider="target" sceneMemberID="viewController">
@@ -56,7 +56,7 @@
                             <constraint firstItem="YE9-5k-JWa" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="lxz-Iq-1wS"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="WUB-mr-mDn">
+                    <navigationItem key="navigationItem" title="Forecast Buddy" id="WUB-mr-mDn">
                         <barButtonItem key="leftBarButtonItem" title="Deg" id="bWd-2y-Mde">
                             <connections>
                                 <action selector="degreesUnitsToggleBbiPressed:" destination="BYZ-38-t0r" id="GtH-6Q-XPm"/>
@@ -116,7 +116,7 @@
             </objects>
             <point key="canvasLocation" x="1755" y="-721"/>
         </scene>
-        <!--Five Day Forecast View Controller-->
+        <!--Five Day Forecast-->
         <scene sceneID="F3C-Ih-FsZ">
             <objects>
                 <viewController id="ta4-SF-FHX" customClass="FiveDayForecastViewController" customModule="ForecastBuddy" customModuleProvider="target" sceneMemberID="viewController">
@@ -198,7 +198,7 @@
                             <constraint firstItem="06C-Ct-mGJ" firstAttribute="centerX" secondItem="Dc8-Pz-42M" secondAttribute="centerX" id="ac1-Vh-2gp"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="khy-gD-hzx"/>
+                    <navigationItem key="navigationItem" title="Five Day Forecast" id="khy-gD-hzx"/>
                     <connections>
                         <outlet property="activityIndicator" destination="06C-Ct-mGJ" id="jIA-P7-ZRn"/>
                         <outlet property="tableView" destination="3gq-JO-Mo9" id="gBk-8R-AWE"/>

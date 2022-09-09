@@ -24,7 +24,7 @@ class FiveDayForecastViewController: UIViewController, UITableViewDataSource, UI
         tableView.delegate = self
         tableView.dataSource = self
         
-        title = "Five Day Forecast"
+        //title = "Five Day Forecast"
         configureHourlyForecastFrc()
 
         if let hourly = forecast.hourlyForecast?.count, hourly == 0 {
@@ -43,12 +43,10 @@ class FiveDayForecastViewController: UIViewController, UITableViewDataSource, UI
 extension FiveDayForecastViewController {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        
         return fetchedResultsController.sections?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-
         return fetchedResultsController.sections?[section].numberOfObjects ?? 0
     }
 

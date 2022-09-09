@@ -25,7 +25,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "Forecast Buddy"
+        //title = "Forecast Buddy"
         
         // retrieve dataController
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -216,9 +216,9 @@ extension MapViewController {
                 return
             }
             
-            let forecast = self.dataController.viewContext.object(with: forecastID) as! Forecast
-            
             if let view = self.mapView.view(for: annotation) as? MKMarkerAnnotationView {
+             
+                let forecast = self.dataController.viewContext.object(with: forecastID) as! Forecast
                 
                 annotation.forecast = forecast
                 view.detailCalloutAccessoryView = self.getDetailCalloutAccessory(annotation: annotation)
