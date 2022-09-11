@@ -51,8 +51,31 @@ class OpenWeatherAPI {
     }
     
     enum OpenWeatherAPIError: LocalizedError {
-        case url
-        case badData
+        case urlError
+        case badDataError
+        
+        var errorDescription: String? {
+            switch self {
+            case .urlError:
+                return "Bad URL"
+            case .badDataError:
+                return "Bad OpenWeather data download."
+            }
+        }
+        var failureReason: String? {
+            switch self {
+            case .urlError:
+                return "Possbile bad text formatting."
+            case .badDataError:
+                return "Bad data/response from OpenWeather."
+            }
+        }
+        var helpAnchor: String? {
+            return "Contact developer for prompt and courteous service."
+        }
+        var recoverySuggestion: String? {
+            return "Close App and re-open."
+        }
     }
 }
 
@@ -81,7 +104,7 @@ extension OpenWeatherAPI {
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data else {
                 DispatchQueue.main.async {
-                    completion(nil, OpenWeatherAPIError.badData)
+                    completion(nil, OpenWeatherAPIError.badDataError)
                 }
                 return
             }
@@ -93,7 +116,7 @@ extension OpenWeatherAPI {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    completion(nil, OpenWeatherAPIError.badData)
+                    completion(nil, OpenWeatherAPIError.badDataError)
                 }
             }
         }

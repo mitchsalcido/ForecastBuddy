@@ -21,6 +21,9 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     var degreesF:Bool!
         
     let WEATHER_UPDATE_INTERVAL:TimeInterval = 30.0//10800.0
+    let NETWORK_TIMEOUT:TimeInterval = 10.0
+    
+    var newAnnotations:[WeatherAnnotation]? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -203,7 +206,7 @@ extension MapViewController {
         
         let annotation = WeatherAnnotation()
         annotation.coordinate = coordinate
-        self.mapView.addAnnotation(annotation)
+        updateAnnotationStatus(annotation: annotation)
 
         annotation.task = dataController.getCurrentForecast(longitude: coordinate.longitude, latitude: coordinate.latitude) { forecastID, error in
             
@@ -219,10 +222,43 @@ extension MapViewController {
             if let view = self.mapView.view(for: annotation) as? MKMarkerAnnotationView {
              
                 let forecast = self.dataController.viewContext.object(with: forecastID) as! Forecast
-                
+                                
                 annotation.forecast = forecast
+                annotation.task = nil
+
                 view.detailCalloutAccessoryView = self.getDetailCalloutAccessory(annotation: annotation)
                 view.rightCalloutAccessoryView = self.getRightCalloutAccessory()
+            }
+        }
+    }
+    
+    func updateAnnotationStatus(annotation:WeatherAnnotation) {
+        
+        mapView.addAnnotation(annotation)
+        
+        if let _ = newAnnotations {
+            newAnnotations?.append(annotation)
+        } else {
+            newAnnotations = [annotation]
+            
+            let _ = Timer.scheduledTimer(withTimeInterval: NETWORK_TIMEOUT, repeats: false) { timer in
+                
+                if let annotations = self.newAnnotations {
+                    
+                    var badNetwork = false
+                    for annotation in annotations {
+                        
+                        if annotation.forecast == nil {
+                            annotation.task?.cancel()
+                            badNetwork = true
+                            self.mapView.removeAnnotation(annotation)
+                        }
+                    }
+                    if badNetwork {
+                        self.showAlert()
+                    }
+                }
+                self.newAnnotations = nil
             }
         }
     }

@@ -134,7 +134,7 @@ extension CoreDataController {
         return OpenWeatherAPI.getCurrentWeather(longitude: longitude, latitude: latitude) { response, error in
             
             guard let icon = response?.weather.first?.icon, let temperature = response?.main.temp else {
-                completion(nil, OpenWeatherAPI.OpenWeatherAPIError.badData)
+                completion(nil, OpenWeatherAPI.OpenWeatherAPIError.badDataError)
                 return
             }
             
@@ -169,7 +169,7 @@ extension CoreDataController {
         return OpenWeatherAPI.getFiveDayForecast(longitude: forecast.longitude, latitude: forecast.latitude) { response, error in
             
             guard let response = response?.list else {
-                completion(OpenWeatherAPI.OpenWeatherAPIError.badData)
+                completion(OpenWeatherAPI.OpenWeatherAPIError.badDataError)
                 return
             }
             
