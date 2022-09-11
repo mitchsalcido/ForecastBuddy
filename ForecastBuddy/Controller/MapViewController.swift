@@ -24,7 +24,9 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     let NETWORK_TIMEOUT:TimeInterval = 10.0
     
     var newAnnotations:[WeatherAnnotation]? = nil
-    var networkTimer: Timer? = nil
+    //var networkTimer: Timer? = nil
+    
+    var newlyDroppedAnnotations:[WeatherAnnotation:Timer] = [:]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -222,6 +224,11 @@ extension MapViewController {
             
             if let view = self.mapView.view(for: annotation) as? MKMarkerAnnotationView {
              
+                if let timer = self.newlyDroppedAnnotations.removeValue(forKey: annotation) {
+                    print("good forecast. Invalidating timer")
+                    timer.invalidate()
+                }
+                
                 let forecast = self.dataController.viewContext.object(with: forecastID) as! Forecast
                                 
                 annotation.forecast = forecast
@@ -236,37 +243,18 @@ extension MapViewController {
     func updateAnnotationStatus(annotation:WeatherAnnotation) {
         
         mapView.addAnnotation(annotation)
-        
-        if let _ = newAnnotations {
-            newAnnotations?.append(annotation)
-        } else {
-            newAnnotations = [annotation]
+        newlyDroppedAnnotations[annotation] = Timer.scheduledTimer(withTimeInterval: NETWORK_TIMEOUT, repeats: false, block: { timer in
             
-            if networkTimer == nil {
-                print("timer == nil")
-                networkTimer = Timer.scheduledTimer(withTimeInterval: NETWORK_TIMEOUT, repeats: false) { timer in
-                    
-                    print("time out")
-                    if let annotations = self.newAnnotations {
-                        
-                        var badNetwork = false
-                        for annotation in annotations {
-                            
-                            if annotation.forecast == nil {
-                                annotation.task?.cancel()
-                                badNetwork = true
-                                self.mapView.removeAnnotation(annotation)
-                            }
-                        }
-                        if badNetwork {
-                            self.showAlert(OpenWeatherAPI.OpenWeatherAPIError.slowNetwork)
-                        }
-                    }
-                    self.newAnnotations = nil
-                    self.networkTimer = nil
-                }
+            for (weatherAnnotation, timer) in self.newlyDroppedAnnotations {
+                
+                weatherAnnotation.task?.cancel()
+                timer.invalidate()
+                self.mapView.removeAnnotation(weatherAnnotation)
             }
-        }
+            
+            self.newlyDroppedAnnotations.removeAll()
+            self.showAlert(OpenWeatherAPI.OpenWeatherAPIError.slowNetwork)
+        })
     }
 }
 
