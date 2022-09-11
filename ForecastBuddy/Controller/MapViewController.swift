@@ -116,18 +116,27 @@ extension MapViewController {
     // handle callout accessory tap
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         
-        guard let weatherAnnotation = view.annotation as? WeatherAnnotation, let forecast = weatherAnnotation.forecast else {
+        guard let weatherAnnotation = view.annotation as? WeatherAnnotation else {
             return
         }
         
         if control == view.rightCalloutAccessoryView {
-            performSegue(withIdentifier: "ForecastSegueID", sender: forecast)
+            performSegue(withIdentifier: "ForecastSegueID", sender: weatherAnnotation.forecast)
         }
         
         if control == view.leftCalloutAccessoryView {
-            dataController.deleteManagedObjects(objects: [forecast]) { error in
-                if let _ = error {
-                    print("pin delete error")
+            
+            if let forecast = weatherAnnotation.forecast {
+                dataController.deleteManagedObjects(objects: [forecast]) { error in
+                    if let _ = error {
+                        print("pin delete error")
+                    }
+                }
+            } else {
+                
+                weatherAnnotation.task?.cancel()
+                if let timer = newlyDroppedAnnotations.removeValue(forKey: weatherAnnotation) {
+                    timer.invalidate()
                 }
             }
             
@@ -246,7 +255,6 @@ extension MapViewController {
         newlyDroppedAnnotations[annotation] = Timer.scheduledTimer(withTimeInterval: NETWORK_TIMEOUT, repeats: false, block: { timer in
             
             for (weatherAnnotation, timer) in self.newlyDroppedAnnotations {
-                
                 weatherAnnotation.task?.cancel()
                 timer.invalidate()
                 self.mapView.removeAnnotation(weatherAnnotation)
