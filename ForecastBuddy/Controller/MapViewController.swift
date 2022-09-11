@@ -24,6 +24,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     let NETWORK_TIMEOUT:TimeInterval = 10.0
     
     var newAnnotations:[WeatherAnnotation]? = nil
+    var networkTimer: Timer? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -241,24 +242,29 @@ extension MapViewController {
         } else {
             newAnnotations = [annotation]
             
-            let _ = Timer.scheduledTimer(withTimeInterval: NETWORK_TIMEOUT, repeats: false) { timer in
-                
-                if let annotations = self.newAnnotations {
+            if networkTimer == nil {
+                print("timer == nil")
+                networkTimer = Timer.scheduledTimer(withTimeInterval: NETWORK_TIMEOUT, repeats: false) { timer in
                     
-                    var badNetwork = false
-                    for annotation in annotations {
+                    print("time out")
+                    if let annotations = self.newAnnotations {
                         
-                        if annotation.forecast == nil {
-                            annotation.task?.cancel()
-                            badNetwork = true
-                            self.mapView.removeAnnotation(annotation)
+                        var badNetwork = false
+                        for annotation in annotations {
+                            
+                            if annotation.forecast == nil {
+                                annotation.task?.cancel()
+                                badNetwork = true
+                                self.mapView.removeAnnotation(annotation)
+                            }
+                        }
+                        if badNetwork {
+                            self.showAlert(OpenWeatherAPI.OpenWeatherAPIError.slowNetwork)
                         }
                     }
-                    if badNetwork {
-                        self.showAlert()
-                    }
+                    self.newAnnotations = nil
+                    self.networkTimer = nil
                 }
-                self.newAnnotations = nil
             }
         }
     }

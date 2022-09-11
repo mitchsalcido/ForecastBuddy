@@ -9,9 +9,9 @@ import UIKit
 
 extension UIViewController {
     
-    func showAlert() {
+    func showAlert(_ error: LocalizedError) {
         
-        let alert = UIAlertController(title: "No Data", message: "Bad network data. Try later", preferredStyle: .alert)
+        let alert = UIAlertController(title: error.localizedDescription, message: error.recoverySuggestion, preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default)
         alert.addAction(okAction)
         present(alert, animated: true)

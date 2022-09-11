@@ -53,6 +53,7 @@ class OpenWeatherAPI {
     enum OpenWeatherAPIError: LocalizedError {
         case urlError
         case badDataError
+        case slowNetwork
         
         var errorDescription: String? {
             switch self {
@@ -60,6 +61,8 @@ class OpenWeatherAPI {
                 return "Bad URL"
             case .badDataError:
                 return "Bad OpenWeather data download."
+            case .slowNetwork:
+                return "Slow or bad network connection."
             }
         }
         var failureReason: String? {
@@ -68,6 +71,8 @@ class OpenWeatherAPI {
                 return "Possbile bad text formatting."
             case .badDataError:
                 return "Bad data/response from OpenWeather."
+            case .slowNetwork:
+                return "Excessive download time."
             }
         }
         var helpAnchor: String? {
