@@ -28,7 +28,7 @@ class FiveDayForecastViewController: UIViewController, UITableViewDataSource, UI
         configureHourlyForecastFrc()
 
         if let hourly = forecast.hourlyForecast?.count, hourly == 0 {
-            let _ = dataController.getFiveDayForecast(forecast: forecast) { error in
+            dataController.getFiveDayForecast(forecast: forecast) { error in
                 if let _ = error {
                     // TODO: network error alert
                 } else {

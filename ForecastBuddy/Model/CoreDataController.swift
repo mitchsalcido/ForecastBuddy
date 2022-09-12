@@ -163,10 +163,10 @@ extension CoreDataController {
         }
     }
     
-    func getFiveDayForecast(forecast:Forecast, completion: @escaping (LocalizedError?) -> Void) -> URLSessionDataTask? {
+    func getFiveDayForecast(forecast:Forecast, completion: @escaping (LocalizedError?) -> Void) {
         
         let objectID = forecast.objectID
-        return OpenWeatherAPI.getFiveDayForecast(longitude: forecast.longitude, latitude: forecast.latitude) { response, error in
+        OpenWeatherAPI.getFiveDayForecast(longitude: forecast.longitude, latitude: forecast.latitude) { response, error in
             
             guard let response = response?.list else {
                 completion(OpenWeatherAPI.OpenWeatherAPIError.badDataError)
