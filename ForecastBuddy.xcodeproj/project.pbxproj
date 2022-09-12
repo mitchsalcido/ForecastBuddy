@@ -26,6 +26,7 @@
 		307DCBE028CBB9CB00D074D0 /* ViewController+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307DCBDF28CBB9CB00D074D0 /* ViewController+Ext.swift */; };
 		307FEFEE2899BA7600E5AE79 /* ForecastModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 307FEFEC2899BA7600E5AE79 /* ForecastModel.xcdatamodeld */; };
 		307FEFF02899C2AF00E5AE79 /* CoreDataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307FEFEF2899C2AF00E5AE79 /* CoreDataController.swift */; };
+		30D2C72328CFA45C003E4E8C /* readme.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 30D2C72228CFA45C003E4E8C /* readme.rtf */; };
 		30D465F028945EFC009F0BCE /* OpenWeatherAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D465EF28945EFC009F0BCE /* OpenWeatherAPI.swift */; };
 		30D465F228946AB0009F0BCE /* CurrentWeatherResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D465F128946AB0009F0BCE /* CurrentWeatherResponses.swift */; };
 /* End PBXBuildFile section */
@@ -71,6 +72,7 @@
 		307DCBDF28CBB9CB00D074D0 /* ViewController+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+Ext.swift"; sourceTree = "<group>"; };
 		307FEFED2899BA7600E5AE79 /* ForecastModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ForecastModel.xcdatamodel; sourceTree = "<group>"; };
 		307FEFEF2899C2AF00E5AE79 /* CoreDataController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataController.swift; sourceTree = "<group>"; };
+		30D2C72228CFA45C003E4E8C /* readme.rtf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.rtf; path = readme.rtf; sourceTree = "<group>"; };
 		30D465EF28945EFC009F0BCE /* OpenWeatherAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenWeatherAPI.swift; sourceTree = "<group>"; };
 		30D465F128946AB0009F0BCE /* CurrentWeatherResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentWeatherResponses.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -113,6 +115,7 @@
 		307B220E28942A1D009FDD65 = {
 			isa = PBXGroup;
 			children = (
+				30D2C72228CFA45C003E4E8C /* readme.rtf */,
 				307B221928942A1D009FDD65 /* ForecastBuddy */,
 				307B223028942A20009FDD65 /* ForecastBuddyTests */,
 				307B223A28942A20009FDD65 /* ForecastBuddyUITests */,
@@ -309,6 +312,7 @@
 			files = (
 				307B222728942A20009FDD65 /* LaunchScreen.storyboard in Resources */,
 				307B222428942A20009FDD65 /* Assets.xcassets in Resources */,
+				30D2C72328CFA45C003E4E8C /* readme.rtf in Resources */,
 				307B222228942A1D009FDD65 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

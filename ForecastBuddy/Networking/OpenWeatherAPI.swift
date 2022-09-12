@@ -102,7 +102,9 @@ extension OpenWeatherAPI {
     class func taskGET<ResponseType: Decodable>(url: URL?, responseType: ResponseType.Type, completion: @escaping (ResponseType?, LocalizedError?) -> Void) -> URLSessionDataTask? {
         
         guard let url = url else {
-            print("bad url")
+            DispatchQueue.main.async {
+                completion(nil, OpenWeatherAPIError.urlError)
+            }
             return nil
         }
         
