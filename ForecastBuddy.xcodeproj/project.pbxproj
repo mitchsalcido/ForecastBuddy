@@ -115,7 +115,6 @@
 		307B220E28942A1D009FDD65 = {
 			isa = PBXGroup;
 			children = (
-				30D2C72228CFA45C003E4E8C /* readme.rtf */,
 				307B221928942A1D009FDD65 /* ForecastBuddy */,
 				307B223028942A20009FDD65 /* ForecastBuddyTests */,
 				307B223A28942A20009FDD65 /* ForecastBuddyUITests */,
@@ -136,6 +135,7 @@
 		307B221928942A1D009FDD65 /* ForecastBuddy */ = {
 			isa = PBXGroup;
 			children = (
+				30D2C72228CFA45C003E4E8C /* readme.rtf */,
 				307B221A28942A1D009FDD65 /* AppDelegate.swift */,
 				307B221C28942A1D009FDD65 /* SceneDelegate.swift */,
 				307B222828942A20009FDD65 /* Info.plist */,
