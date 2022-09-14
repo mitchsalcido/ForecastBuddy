@@ -24,13 +24,12 @@ class FiveDayForecastViewController: UIViewController, UITableViewDataSource, UI
         tableView.delegate = self
         tableView.dataSource = self
         
-        //title = "Five Day Forecast"
         configureHourlyForecastFrc()
 
         if let hourly = forecast.hourlyForecast?.count, hourly == 0 {
             dataController.getFiveDayForecast(forecast: forecast) { error in
-                if let _ = error {
-                    // TODO: network error alert
+                if let error = error {
+                    self.showAlert(error)
                 } else {
                     self.configureHourlyForecastFrc()
                 }
@@ -111,7 +110,7 @@ extension FiveDayForecastViewController {
                 activityIndicator.stopAnimating()
             }
         } catch {
-            // TODO: alert error
+            showAlert(CoreDataController.CoreDataError.badFetch)
         }
     }
 }

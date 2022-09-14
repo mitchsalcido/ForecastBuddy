@@ -9,6 +9,7 @@ import UIKit
 import MapKit
 import CoreData
 
+// ...some debug locations
 // 37.77° N lat, -122.41° W lon San Fran
 // 39.73° N lat, -121.84° W lon Chico
 class MapViewController: UIViewController, MKMapViewDelegate {
@@ -22,17 +23,12 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         
     let WEATHER_UPDATE_INTERVAL:TimeInterval = 30.0//10800.0
     let NETWORK_TIMEOUT:TimeInterval = 10.0
-    
-    var newAnnotations:[WeatherAnnotation]? = nil
-    //var networkTimer: Timer? = nil
-    
+        
     var newlyDroppedAnnotations:[WeatherAnnotation:Timer] = [:]
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        //title = "Forecast Buddy"
-        
+                
         // retrieve dataController
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         dataController = appDelegate.dataController
@@ -43,8 +39,10 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         let bbi = UIBarButtonItem(customView: button)
         navigationItem.rightBarButtonItem = bbi
         
+        // retrieve persisted forecasts
         fetchCurrentForecasts()
 
+        // default °F/°C preference
         degreesF = UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
     }
@@ -223,10 +221,8 @@ extension MapViewController {
         annotation.task = dataController.getCurrentForecast(longitude: coordinate.longitude, latitude: coordinate.latitude) { forecastID, error in
             
             guard let forecastID = forecastID else {
-                if let _ = error {
-                    // TODO: error alert
-                } else {
-                    // TODO: error alert
+                if let error = error {
+                    self.showAlert(error)
                 }
                 return
             }
@@ -234,7 +230,6 @@ extension MapViewController {
             if let view = self.mapView.view(for: annotation) as? MKMarkerAnnotationView {
              
                 if let timer = self.newlyDroppedAnnotations.removeValue(forKey: annotation) {
-                    print("good forecast. Invalidating timer")
                     timer.invalidate()
                 }
                 
@@ -297,8 +292,8 @@ extension MapViewController {
             mapView.addAnnotations(annotations)
             
             dataController.deleteManagedObjects(objects: oldForecasts) { error in
-                if let _ = error {
-                    // TODO: delete pins error alert
+                if let error = error {
+                    self.showAlert(error)
                 }
             }
             
@@ -306,7 +301,7 @@ extension MapViewController {
                 addNewForecast(coordinate: coordinate)
             }
         } catch {
-            // TODO: bad pins fetch error alert
+            showAlert(CoreDataController.CoreDataError.badFetch)
         }
     }
     

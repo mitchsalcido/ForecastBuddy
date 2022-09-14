@@ -8,14 +8,7 @@
 import Foundation
 
 extension Date {
-    
-    func toLocalTime() -> Date {
-        let timezoneOffset = TimeZone.current.secondsFromGMT()
-        let epochDate = self.timeIntervalSince1970
-        let timezoneEpochOffset = (epochDate + Double(timezoneOffset))
-        return Date(timeIntervalSince1970: timezoneEpochOffset)
-    }
-    
+
     func dayString() -> String {
         // day of week..."Monday", "Tuesday"...."Sunday"
         let formatter = DateFormatter()

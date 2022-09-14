@@ -20,8 +20,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         dataController = CoreDataController(name: "ForecastModel")
         dataController.load()
         
-        // Degrees Fahren/Celc user preference stored in UserDefaults
+        // Configure Degrees Fah/Cel user preference stored in UserDefaults
         if UserDefaults.standard.value(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey) == nil {
+            
+            // default to Far (true) on first app use
             UserDefaults.standard.set(true, forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         }
         

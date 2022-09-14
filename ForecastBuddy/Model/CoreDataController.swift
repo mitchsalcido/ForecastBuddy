@@ -6,7 +6,7 @@
 //
 /*
  About CoreDataController:
- Handle setup and config of Core Data stack. Provide functions for saving, deleting, and background operations.
+ Handle setup and config of Core Data stack. Provide functions for saving, deleting, and background operations. Retrieve network data and store
  */
 import Foundation
 import CoreData
