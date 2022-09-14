@@ -4,6 +4,11 @@
 //
 //  Created by Mitchell Salcido on 7/29/22.
 //
+/*
+ About MapViewController:
+ Presents a mapView that allows the user to long-touch and place an annotation view. Placement of annotation invokes the downloading of an OpenWeather API current weather data response, and persisted into a Forecast core data model.
+ The annotations provide accessory views that allow user to delete the annotation, view the current weather conditions, or navigate to five-day forecast tableView
+ */
 
 import UIKit
 import MapKit
@@ -16,6 +21,8 @@ class MapViewController: UIViewController, MKMapViewDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var degreesUnitsToggleBbi: UIBarButtonItem!
+    
+    var appInfoBbi: UIBarButtonItem!
     
     var dataController:CoreDataController!
         
@@ -36,8 +43,8 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         // info button to navigate to AppInfo
         let button = UIButton(type: .infoLight)
         button.addTarget(self, action: #selector(appInfoButtonPressed(_:)), for: .touchUpInside)
-        let bbi = UIBarButtonItem(customView: button)
-        navigationItem.rightBarButtonItem = bbi
+        appInfoBbi = UIBarButtonItem(customView: button)
+        navigationItem.rightBarButtonItem = appInfoBbi
         
         // retrieve persisted forecasts
         fetchCurrentForecasts()
@@ -143,14 +150,15 @@ extension MapViewController {
     }
 
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        degreesUnitsToggleBbi.isEnabled = false
+        updateUI(enable: false)
     }
     
     func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
-        degreesUnitsToggleBbi.isEnabled = true
+        updateUI(enable: true)
     }
 }
 
+// MARK: AnnotationView accessory view creation functions
 extension MapViewController {
     
     func getLeftCalloutAccessory() -> UIButton {
@@ -210,6 +218,7 @@ extension MapViewController {
     }
 }
 
+// MARK: Creating new Forecast functions
 extension MapViewController {
     
     func addNewForecast(coordinate: CLLocationCoordinate2D) {
@@ -261,6 +270,7 @@ extension MapViewController {
     }
 }
 
+// MARK: Misc helper functions
 extension MapViewController {
     
     func fetchCurrentForecasts() {
@@ -308,5 +318,11 @@ extension MapViewController {
     // navigate to AppInfoViewController
     @objc func appInfoButtonPressed(_ sender: Any) {
         performSegue(withIdentifier: "AppInfoSegueID", sender: nil)
+    }
+    
+    // set UI enable state
+    func updateUI(enable: Bool) {
+        appInfoBbi.isEnabled = enable
+        degreesUnitsToggleBbi.isEnabled = enable
     }
 }

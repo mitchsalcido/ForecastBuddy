@@ -43,9 +43,9 @@ class CoreDataController {
     
     // Core Data errors
     enum CoreDataError: LocalizedError {
-        case badSave
-        case badFetch
-        case badData
+        case badSave        // bad save
+        case badFetch       // bad fetch
+        case badData        // bad data
         
         var errorDescription: String? {
             switch self {
@@ -128,33 +128,47 @@ extension CoreDataController {
 }
 
 extension CoreDataController {
-    
+    /*
+     Handle retrieval of current weather. Return URLSessionDataTask object for use in canceling network task in the event of bad network or time-out
+     */
     func getCurrentForecast(longitude: Double, latitude: Double, completion: @escaping (NSManagedObjectID?, LocalizedError?) -> Void) -> URLSessionDataTask? {
         
+        // current weather network call
         return OpenWeatherAPI.getCurrentWeather(longitude: longitude, latitude: latitude) { response, error in
             
+            // test current weather returned data response
             guard let icon = response?.weather.first?.icon, let temperature = response?.main.temp else {
+                // bad response
                 completion(nil, OpenWeatherAPI.OpenWeatherAPIError.badDataError)
                 return
             }
             
+            /*
+             good response. Create a new currentWeather forecast on a background private context
+             */
             self.performBackgroundOp { privateContext in
+                
+                // create new Forecast core data model
                 let forecast = Forecast(context: privateContext)
                 forecast.latitude = latitude
                 forecast.longitude = longitude
                 forecast.date = Date()
               
+                // create new CurrentCondition core data model
                 let currentCondition = CurrentCondition(context: privateContext)
                 currentCondition.icon = icon
                 currentCondition.temperatureKelvin = temperature
                 currentCondition.forecast = forecast
                 
+                // save
                 self.saveContext(context: privateContext) { error in
                     let objectID = forecast.objectID
                     DispatchQueue.main.async {
                         if let _ = error {
+                            // bad save
                             completion(nil, CoreDataError.badSave)
                         } else {
+                            // good save. Return Forecast objectID for use on main
                             completion(objectID, nil)
                         }
                     }
@@ -163,29 +177,49 @@ extension CoreDataController {
         }
     }
     
+    /*
+     Handle retrieval of five-day forecast. Assign five days worth of hourly responses to Forecast data
+     */
     func getFiveDayForecast(forecast:Forecast, completion: @escaping (LocalizedError?) -> Void) {
         
+        // objectID for use on background private queue
         let objectID = forecast.objectID
+        
+        // five-day forecast network call
         OpenWeatherAPI.getFiveDayForecast(longitude: forecast.longitude, latitude: forecast.latitude) { response, error in
             
+            // test response
             guard let response = response?.list else {
+                // bad response
                 completion(OpenWeatherAPI.OpenWeatherAPIError.badDataError)
                 return
             }
             
+            // Using response, create Forecast on background queue
             self.performBackgroundOp { privateContext in
                 let privateForecast = privateContext.object(with: objectID) as! Forecast
                 
+                // HourlyForecast will be sorted by dayOfWeek, Date(time)
                 var dayOfWeek:Int16 = 0
+                
+                // day string to assign to hourlyForecasts
                 var lastDay = ""
+                
+                // iterate through response
                 for hourly in response {
+                    
+                    // test response data
                     if let icon = hourly.weather.first?.icon, let description = hourly.weather.first?.description {
+                        
+                        // create new hourly forecast. Assign dayOfWeek (for sorting)
                         let hourlyForecast = HourlyForecast(context: privateContext)
                         let date = Date(timeIntervalSince1970: Double(hourly.dt))
                         if lastDay != date.dayString() {
                             dayOfWeek += 1
                             lastDay = date.dayString()
                         }
+                        
+                        // complete assignment of data to hourlyForecast
                         hourlyForecast.date = date
                         hourlyForecast.dayOfWeek = dayOfWeek
                         hourlyForecast.icon = icon
@@ -194,6 +228,8 @@ extension CoreDataController {
                         hourlyForecast.forecast = privateForecast
                     }
                 }
+                
+                // save when complete
                 self.saveContext(context: privateContext) { error in
                     DispatchQueue.main.async {
                         completion(error)

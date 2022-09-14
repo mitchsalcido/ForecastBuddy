@@ -4,6 +4,10 @@
 //
 //  Created by Mitchell Salcido on 8/1/22.
 //
+/*
+ About ForecastTableViewCell:
+ Custom tableView cell for displaying time, temperature, description, and image of weather icon
+ */
 
 import UIKit
 
