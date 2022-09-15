@@ -6,7 +6,7 @@
 //
 /*
  About MapViewController:
- Presents a mapView that allows the user to long-touch and place an annotation view. Placement of annotation invokes the downloading of an OpenWeather API current weather data response, and persisted into a Forecast core data model.
+ Presents a mapView that allows the user to long-touch and place an annotation view. Placement of annotation invokes the downloading of an OpenWeather API current weather data response, and persists into a Forecast core data model.
  The annotations provide accessory views that allow user to delete the annotation, view the current weather conditions, or navigate to five-day forecast tableView
  */
 
@@ -14,23 +14,30 @@ import UIKit
 import MapKit
 import CoreData
 
-// ...some debug locations
-// 37.77° N lat, -122.41° W lon San Fran
-// 39.73° N lat, -121.84° W lon Chico
 class MapViewController: UIViewController, MKMapViewDelegate {
 
+    // ref to mapView
     @IBOutlet weak var mapView: MKMapView!
+    
+    // ref to degreesUnits toggle, degrees F/C
     @IBOutlet weak var degreesUnitsToggleBbi: UIBarButtonItem!
     
+    // ref to appInfoBbi..segue to AppInfoVC
     var appInfoBbi: UIBarButtonItem!
     
+    // ref to CoreDataController
     var dataController:CoreDataController!
         
+    // degrees units (°F/°C) shown in annotation view are determined by this property
     var degreesF:Bool!
         
+    // update weather info after 3 hours. Persisted forecasts tested at app launch
     let WEATHER_UPDATE_INTERVAL:TimeInterval = 30.0//10800.0
+    
+    // timeout for network operations. Alert user of network issues
     let NETWORK_TIMEOUT:TimeInterval = 10.0
         
+    // Array of newly placed forecast annotaions. Used to test network issues
     var newlyDroppedAnnotations:[WeatherAnnotation:Timer] = [:]
     
     override func viewDidLoad() {
@@ -40,22 +47,25 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         dataController = appDelegate.dataController
         
-        // info button to navigate to AppInfo
+        // info button to navigate to AppInfoVC
         let button = UIButton(type: .infoLight)
         button.addTarget(self, action: #selector(appInfoButtonPressed(_:)), for: .touchUpInside)
         appInfoBbi = UIBarButtonItem(customView: button)
         navigationItem.rightBarButtonItem = appInfoBbi
         
-        // retrieve persisted forecasts
+        // retrieve persisted current weather forecasts
         fetchCurrentForecasts()
 
-        // default °F/°C preference
+        // retrieve default °F/°C preference
         degreesF = UserDefaults.standard.bool(forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ForecastSegueID" {
+            /*
+             Handle segue to FiveDayForevastVC. Set properties
+             */
             let controller = segue.destination as! FiveDayForecastViewController
             let forecast = sender as? Forecast
             controller.degreesF = degreesF
@@ -65,12 +75,18 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     }
     
     @IBAction func degreesUnitsToggleBbiPressed(_ sender: Any) {
+        /*
+         Handle degreesF toggle. Toggles degreesF and updates UserDefault for future use.
+         */
         
+        // toggle, update bbi title
         degreesF = !degreesF
         degreesUnitsToggleBbi.title = degreesF ? "°F" : "°C"
         
+        // update UserDefaults
         UserDefaults.standard.set(degreesF, forKey: OpenWeatherAPI.UserInfo.degreesUnitsPreferenceKey)
         
+        // update text in annotationViews
         let annotations = mapView.annotations as! [WeatherAnnotation]
         for weatherAnnotation in annotations {
             if let view = mapView.view(for: weatherAnnotation) as? MKMarkerAnnotationView {
@@ -80,13 +96,18 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     }
     
     @IBAction func longPressDetected(_ sender: Any) {
+        /*
+         Handle placement of new pin annotation
+         */
         
-        // retreive location of touch
+        // retrieve map location/coordinates
         let longPressGr = sender as! UILongPressGestureRecognizer
         let pressLocation = longPressGr.location(in: mapView)
         let coordinate = mapView.convert(pressLocation, toCoordinateFrom: mapView)
         
+        // test for long press
         if longPressGr.state == .began {
+            // good long press. Add new forecast/annotation
             addNewForecast(coordinate: coordinate)
         }
     }
@@ -98,21 +119,22 @@ extension MapViewController {
     // handle creation of annotationView
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         
+        // cast annotation and create new annotationView
         let weatherAnnotation = annotation as! WeatherAnnotation
         let pinView = MKMarkerAnnotationView(annotation: weatherAnnotation, reuseIdentifier: nil)
         
         pinView.canShowCallout = true
         pinView.animatesWhenAdded = true
 
-        // left accessory...delete weatherAnnotation
+        // add left accessory...delete weatherAnnotation
         pinView.leftCalloutAccessoryView = getLeftCalloutAccessory()
         
-        // right accessory...navigate to WeatherDetailController
+        // add right accessory...navigate to WeatherDetailController
         if let _ = weatherAnnotation.forecast?.hourlyForecast {
             pinView.rightCalloutAccessoryView = getRightCalloutAccessory()
         }
         
-        // detail accessory...view with current conditions
+        // add detail accessory...view with current conditions
         pinView.detailCalloutAccessoryView = getDetailCalloutAccessory(annotation: weatherAnnotation)
         
         return pinView
@@ -121,30 +143,39 @@ extension MapViewController {
     // handle callout accessory tap
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         
+        // verify good WeatherAnnotation
         guard let weatherAnnotation = view.annotation as? WeatherAnnotation else {
             return
         }
         
+        // test for right callout. Segue to FiveDayForecastVC
         if control == view.rightCalloutAccessoryView {
             performSegue(withIdentifier: "ForecastSegueID", sender: weatherAnnotation.forecast)
         }
         
+        // test for left callout accessory for forecase/annotation deletion
         if control == view.leftCalloutAccessoryView {
             
             if let forecast = weatherAnnotation.forecast {
+                // valid forecast. Delete Forecast
                 dataController.deleteManagedObjects(objects: [forecast]) { error in
-                    if let _ = error {
-                        print("pin delete error")
+                    if let error = error {
+                        // bad deletion. Show error
+                        self.showAlert(error)
                     }
                 }
             } else {
-                
+                /*
+                 nil forecast means that network is still trying to download
+                 Cancel network task and invalidate timer associated with annotation
+                 */
                 weatherAnnotation.task?.cancel()
                 if let timer = newlyDroppedAnnotations.removeValue(forKey: weatherAnnotation) {
                     timer.invalidate()
                 }
             }
             
+            // remove annotation from mapView
             mapView.removeAnnotation(weatherAnnotation)
         }
     }
@@ -187,7 +218,7 @@ extension MapViewController {
             if let image = UIImage(named: icon) {
                 imageView.image = image
             } else {
-                // TODO: default icon
+                imageView.image = UIImage(named: "DefaultWeather")
             }
             detailView.addSubview(imageView)
             
