@@ -120,6 +120,7 @@ class OpenWeatherAPI {
     }
 }
 
+// MARK: -OpenWeather API functions
 extension OpenWeatherAPI {
     
     /*
@@ -142,6 +143,7 @@ extension OpenWeatherAPI {
     }
 }
 
+// MARK: -Network functions
 extension OpenWeatherAPI {
     
     /*

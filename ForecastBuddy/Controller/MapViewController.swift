@@ -113,7 +113,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     }
 }
 
-// MARK: MapView Delegate
+// MARK: -MapView Delegate
 extension MapViewController {
     
     // handle creation of annotationView
@@ -180,18 +180,21 @@ extension MapViewController {
         }
     }
 
+    // disable UI when annotationViews are selected
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         updateUI(enable: false)
     }
     
+    // enable UI when annotationViews are deselected
     func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
         updateUI(enable: true)
     }
 }
 
-// MARK: AnnotationView accessory view creation functions
+// MARK: -AnnotationView accessory view creation functions
 extension MapViewController {
     
+    // left callout accessory: Delete annotation/forecast
     func getLeftCalloutAccessory() -> UIButton {
         let button = UIButton(type: .custom)
         button.frame = CGRect(x: 0.0, y: 0.0, width: 35.0, height: 35.0)
@@ -199,6 +202,7 @@ extension MapViewController {
         return button
     }
     
+    // right callout accessory: Navigate to FiveDayForecastVC
     func getRightCalloutAccessory() -> UIButton {
         let button = UIButton(type: .custom)
         button.frame = CGRect(x: 0.0, y: 0.0, width: 35.0, height: 35.0)
@@ -206,22 +210,33 @@ extension MapViewController {
         return button
     }
     
+    // detail callout accessory
     func getDetailCalloutAccessory(annotation: WeatherAnnotation) -> UIView? {
-
+        /*
+         Create detailView that includes weather icon image (sun, clouds, rain, etc) and current temperature. If forecast is being downloaded show an activityIndicator.
+         */
+        
+        // detailView
         let detailView = UIView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 50.0))
         
+        // test for good forecast
         if let forecast = annotation.forecast, let currentCondition = forecast.currentCondition, let icon = currentCondition.icon {
             
+            // good forecast. Add weather icon image
             let imageView = UIImageView(frame: CGRect(x: 0.0, y: 0.0, width: 50.0, height: 35.0))
             imageView.contentMode = .scaleAspectFit
 
+            // image for imageView
             if let image = UIImage(named: icon) {
                 imageView.image = image
             } else {
                 imageView.image = UIImage(named: "DefaultWeather")
             }
+            
+            // add imageView to detailView
             detailView.addSubview(imageView)
             
+            // calculate temperate in proper units,°F/°C
             var temperature = currentCondition.temperatureKelvin
             if degreesF {
                 temperature = 1.8 * (temperature - 273.0) + 32.0
@@ -229,17 +244,22 @@ extension MapViewController {
                 temperature = temperature - 273.15
             }
             
+            // create/add a label with temperature
             let label = UILabel(frame: CGRect(x: 0.0, y: 35.0, width: 50.0, height: 15.0))
             label.text = " \(Int(temperature))°"
             label.textAlignment = .center
             label.allowsDefaultTighteningForTruncation = true
             detailView.addSubview(label)
         } else {
+            /*
+             nil forecast. Network is still downloading. Use an activityIndicator
+             */
             let activityIndicator = UIActivityIndicatorView(frame: detailView.bounds)
             activityIndicator.startAnimating()
             detailView.addSubview(activityIndicator)
         }
 
+        // constraints
         let widthConstraint = detailView.widthAnchor.constraint(equalToConstant: 50.0)
         let heightConstraint = detailView.heightAnchor.constraint(equalToConstant: 50.0)
         widthConstraint.isActive = true
@@ -249,59 +269,88 @@ extension MapViewController {
     }
 }
 
-// MARK: Creating new Forecast functions
+// MARK: -Creating new Forecast functions
 extension MapViewController {
     
+    // add a new current weather forecast to mapView
     func addNewForecast(coordinate: CLLocationCoordinate2D) {
+        /*
+         Using coordinates, add an annotaion to the mapView and also begin downloading of current weather from OpenWeather API
+         */
         
+        // create new annotation
         let annotation = WeatherAnnotation()
         annotation.coordinate = coordinate
-        updateAnnotationStatus(annotation: annotation)
+        
+        // update annotation status (add to map, config download timeout timer
+        configureAnnotation(annotation: annotation)
 
+        /*
+         retrieve forecast. Returned URLSessionDataTask is used for task cancelation if bad/slow networking
+         */
         annotation.task = dataController.getCurrentForecast(longitude: coordinate.longitude, latitude: coordinate.latitude) { forecastID, error in
             
+            // test for good objectID (ManagedObject is created on a private queue)
             guard let forecastID = forecastID else {
                 if let error = error {
+                    // bad forecast objectID
                     self.showAlert(error)
+                } else {
+                    self.showAlert(CoreDataController.CoreDataError.badData)
                 }
                 return
             }
             
+            // retrieve annatationView
             if let view = self.mapView.view(for: annotation) as? MKMarkerAnnotationView {
-             
+                /*
+                 Good forecast was created. Invalidate network "timeout" timer and nil task
+                 */
                 if let timer = self.newlyDroppedAnnotations.removeValue(forKey: annotation) {
                     timer.invalidate()
                 }
-                
-                let forecast = self.dataController.viewContext.object(with: forecastID) as! Forecast
-                                
-                annotation.forecast = forecast
                 annotation.task = nil
 
+                //assign forecast to annotation
+                let forecast = self.dataController.viewContext.object(with: forecastID) as! Forecast
+                annotation.forecast = forecast
+
+                // update detail accessories with current weather conditions and control to allow navigation to FiveDayForecastVC
                 view.detailCalloutAccessoryView = self.getDetailCalloutAccessory(annotation: annotation)
                 view.rightCalloutAccessoryView = self.getRightCalloutAccessory()
             }
         }
     }
     
-    func updateAnnotationStatus(annotation:WeatherAnnotation) {
+    // update status of annotaions
+    func configureAnnotation(annotation:WeatherAnnotation) {
         
+        // add to mapView
         mapView.addAnnotation(annotation)
+        
+        // configure. Add a timer to runloop that functions as a network "timeout" timer
         newlyDroppedAnnotations[annotation] = Timer.scheduledTimer(withTimeInterval: NETWORK_TIMEOUT, repeats: false, block: { timer in
+            /*
+             network timeout. Completion cancels the network task and removes uncompleted annotations from mapView
+             */
             
+            // cancel network task and invalidate timer
             for (weatherAnnotation, timer) in self.newlyDroppedAnnotations {
                 weatherAnnotation.task?.cancel()
                 timer.invalidate()
                 self.mapView.removeAnnotation(weatherAnnotation)
             }
             
+            // remove all new/incompletely downloaded annotation from dictionary
             self.newlyDroppedAnnotations.removeAll()
+            
+            // alert to indicate network timeout
             self.showAlert(OpenWeatherAPI.OpenWeatherAPIError.slowNetwork)
         })
     }
 }
 
-// MARK: Misc helper functions
+// MARK: -Misc helper functions
 extension MapViewController {
     
     func fetchCurrentForecasts() {
