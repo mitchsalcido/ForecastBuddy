@@ -408,7 +408,7 @@ extension MapViewController {
                 }
             }
             
-            // create new/updated forecast to replace old outdated forecasts
+            // create new/updated forecasts to replace old outdated forecasts
             for coordinate in oldCoordinates {
                 addNewForecast(coordinate: coordinate)
             }

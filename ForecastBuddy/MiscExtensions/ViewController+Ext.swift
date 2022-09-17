@@ -4,11 +4,16 @@
 //
 //  Created by Mitchell Salcido on 9/9/22.
 //
+/*
+ About ViewController+Ext:
+ Extent functionality of UIViewController
+ */
 
 import UIKit
 
 extension UIViewController {
     
+    // show an alert with an "OK" dismiss button
     func showAlert(_ error: LocalizedError) {
         
         let alert = UIAlertController(title: error.localizedDescription, message: error.recoverySuggestion, preferredStyle: .alert)
