@@ -21,9 +21,6 @@ class FiveDayForecastViewController: UIViewController, UITableViewDataSource, UI
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        tableView.delegate = self
-        tableView.dataSource = self
-        
         configureHourlyForecastFrc()
 
         if let hourly = forecast.hourlyForecast?.count, hourly == 0 {
@@ -78,7 +75,7 @@ extension FiveDayForecastViewController {
         
         cell.temperatureLabel.text = "\(Int(temperature))°"
         cell.weatherDescriptionLabel.text = hourly.weatherDescription
-        cell.iconImageView.image = UIImage(named: hourly.icon ?? "")
+        cell.iconImageView.image = UIImage(named: hourly.icon ?? "DefaultWeather")
 
         return cell
     }

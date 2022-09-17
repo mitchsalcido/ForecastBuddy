@@ -282,15 +282,15 @@ extension MapViewController {
         let annotation = WeatherAnnotation()
         annotation.coordinate = coordinate
         
-        // update annotation status (add to map, config download timeout timer
+        // update annotation status (add to map, config download timeout timer)
         configureAnnotation(annotation: annotation)
 
         /*
-         retrieve forecast. Returned URLSessionDataTask is used for task cancelation if bad/slow networking
+         retrieve forecast. Returned URLSessionDataTask is used for task cancelation if bad/slow network
          */
         annotation.task = dataController.getCurrentForecast(longitude: coordinate.longitude, latitude: coordinate.latitude) { forecastID, error in
             
-            // test for good objectID (ManagedObject is created on a private queue)
+            // test for good objectID (ManagedObject was created on a private queue)
             guard let forecastID = forecastID else {
                 if let error = error {
                     // bad forecast objectID
@@ -315,14 +315,16 @@ extension MapViewController {
                 let forecast = self.dataController.viewContext.object(with: forecastID) as! Forecast
                 annotation.forecast = forecast
 
-                // update detail accessories with current weather conditions and control to allow navigation to FiveDayForecastVC
+                // update detailAcessory (temperature and weather image icon)
                 view.detailCalloutAccessoryView = self.getDetailCalloutAccessory(annotation: annotation)
+                
+                // add right accessory. Control to navigate to FiveDayForecastVC
                 view.rightCalloutAccessoryView = self.getRightCalloutAccessory()
             }
         }
     }
     
-    // update status of annotaions
+    // configure newly created annotaion
     func configureAnnotation(annotation:WeatherAnnotation) {
         
         // add to mapView
@@ -353,15 +355,32 @@ extension MapViewController {
 // MARK: -Misc helper functions
 extension MapViewController {
     
+    // fetch persisted Forecast managed objects
     func fetchCurrentForecasts() {
+        /*
+         Fetch all persisted Forecast managed objects. Execute a fetch request and test returned Forecast objects for creation date. If more than constant "WEATHER_UPDATE_INTERVAL", then Forecast is deleted/replaced with a new current Forecast object.
+         */
         
+        // create fetch request. Return all Forecast managed objects
         let fetchRequest:NSFetchRequest<Forecast> = NSFetchRequest(entityName: "Forecast")
+        
         do {
+            // execute fetch
             let forecasts = try dataController.viewContext.fetch(fetchRequest)
+            
+            // storage for out of date Forecast (to be deleted)
             var oldForecasts:[Forecast] = []
+            
+            // storage for old coordinates. New Forecast will be creating.
             var oldCoordinates:[CLLocationCoordinate2D] = []
+            
+            // storage for up to date Forecasts (< WEATHER_UPDATE_INTERVAL)
             var currentForecasts:[Forecast] = []
+            
             for forecast in forecasts {
+                /*
+                 Iterate through forecasts. Test forecast.date with now. If < WEATHER_UPDATE_INTERVAL then place forecast into oldForecast array for future deletion. Also retrieve coordinates from old forecast for use in creating new current forecast.
+                 */
                 let now = Date()
                 if let date = forecast.date, date.distance(to: now) > WEATHER_UPDATE_INTERVAL {
                     oldForecasts.append(forecast)
@@ -371,6 +390,7 @@ extension MapViewController {
                 }
             }
             
+            // add current forecast. Create annotaton and add to mapView
             var annotations:[WeatherAnnotation] = []
             for forecast in currentForecasts {
                 let annotation = WeatherAnnotation()
@@ -381,16 +401,19 @@ extension MapViewController {
             }
             mapView.addAnnotations(annotations)
             
+            // delete out of date forecasts
             dataController.deleteManagedObjects(objects: oldForecasts) { error in
                 if let error = error {
                     self.showAlert(error)
                 }
             }
             
+            // create new/updated forecast to replace old outdated forecasts
             for coordinate in oldCoordinates {
                 addNewForecast(coordinate: coordinate)
             }
         } catch {
+            // bad fetch
             showAlert(CoreDataController.CoreDataError.badFetch)
         }
     }
